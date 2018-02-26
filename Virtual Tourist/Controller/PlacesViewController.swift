@@ -35,12 +35,12 @@ class PlacesViewController: UIViewController {
         
         // Do any additional setup after loading the view.
         
-        table.dataSource = self
-        table.delegate = self
-        
         // makes the map "static"
         map.isZoomEnabled = false
         map.isScrollEnabled = false
+        
+        table.dataSource = self
+        table.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -78,7 +78,7 @@ class PlacesViewController: UIViewController {
         // order doesn't matter, so no need to use NSSortDescriptors
         fetchRequest.sortDescriptors = []
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: "\(pin)-photos")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         
         do {
@@ -130,6 +130,7 @@ extension PlacesViewController: UITableViewDataSource {
 extension PlacesViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        table.deselectRow(at: indexPath, animated: false)
         selectedPhoto = fetchedResultsController.object(at: indexPath)
         performSegue(withIdentifier: "placesToDetailSegue", sender: self)
     }

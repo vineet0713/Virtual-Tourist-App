@@ -21,7 +21,7 @@ class MapViewController: UIViewController {
     let latitudinalDist: CLLocationDistance = 5000000   // represents 5 million meters, or 5 thousand kilometers
     let longitudinalDist: CLLocationDistance = 5000000  // represents 5 million meters, or 5 thousand kilometers
     
-    var listOfPins: [PinAnnotation:Pin] = [:]
+    var listOfPins: [MKPointAnnotation:Pin] = [:]
     var selectedPin: Pin!
     
     var editingMode: Bool!
@@ -75,14 +75,15 @@ class MapViewController: UIViewController {
             let longitude = CLLocationDegrees(pin.longitude)
             let coordinates = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             
-            let annotation = PinAnnotation(title: "test", coordinate: coordinates)
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinates
             map.addAnnotation(annotation)
             
             listOfPins[annotation] = pin
         }
     }
     
-    func deletePin(annotationToDelete: PinAnnotation) {
+    func deletePin(annotationToDelete: MKPointAnnotation) {
         let pinToDelete = self.listOfPins[annotationToDelete]!
         DataController.sharedInstance().viewContext.delete(pinToDelete)
         guard DataController.sharedInstance().saveViewContext() else {
@@ -128,7 +129,7 @@ class MapViewController: UIViewController {
             }
             // update Core Data
             for annotation in self.map.annotations {
-                self.deletePin(annotationToDelete: annotation as! PinAnnotation)
+                self.deletePin(annotationToDelete: annotation as! MKPointAnnotation)
             }
         }))
         present(alert, animated: true, completion: nil)
@@ -154,7 +155,8 @@ class MapViewController: UIViewController {
             FlickrClient.sharedInstance().getPhotosFromPin(newPin) { (success, error) in
                 performUIUpdatesOnMain {
                     if success {
-                        let annotation = PinAnnotation(title: "test", coordinate: coordinates)
+                        let annotation = MKPointAnnotation()
+                        annotation.coordinate = coordinates
                         self.map.addAnnotation(annotation)
                         self.listOfPins[annotation] = newPin
                     } else {
@@ -170,13 +172,9 @@ class MapViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let tabBarController = segue.destination as? UITabBarController {
             if let photosVC = tabBarController.viewControllers![0] as? PhotosViewController {
-                /*photosVC.pinLatitude = selectedPin!.coordinate.latitude
-                photosVC.pinLongitude = selectedPin!.coordinate.longitude*/
                 photosVC.pin = selectedPin
             }
             if let placesVC = tabBarController.viewControllers![1] as? PlacesViewController {
-                /*placesVC.pinLatitude = selectedPin!.coordinate.latitude
-                placesVC.pinLongitude = selectedPin!.coordinate.longitude*/
                 placesVC.pin = selectedPin
             }
         }
@@ -187,28 +185,6 @@ class MapViewController: UIViewController {
 
 extension MapViewController: MKMapViewDelegate {
     
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        if let annotationView = map.dequeueReusableAnnotationView(withIdentifier: "dropped pin") {
-            annotationView.annotation = annotation
-            return annotationView
-        } else {
-            let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "dropped pin")
-            annotationView.canShowCallout = true
-            
-            // without adding this UIButton, the 'calloutAccessoryControlTapped' method would not get called!
-            let infoButton = UIButton(type: .detailDisclosure)
-            annotationView.rightCalloutAccessoryView = infoButton
-            
-            return annotationView
-        }
-    }
-    
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        let selectedAnnotation = view.annotation as! PinAnnotation
-        selectedPin = listOfPins[selectedAnnotation]
-        performSegue(withIdentifier: "pinTappedSegue", sender: self)
-    }
-    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if editingMode {
             let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
@@ -218,9 +194,13 @@ extension MapViewController: MKMapViewDelegate {
                     self.map.removeAnnotation(view.annotation!)
                 }
                 // update Core Data
-                self.deletePin(annotationToDelete: view.annotation! as! PinAnnotation)
+                self.deletePin(annotationToDelete: view.annotation! as! MKPointAnnotation)
             }))
             present(alert, animated: true, completion: nil)
+        } else {
+            let selectedAnnotation = view.annotation! as! MKPointAnnotation
+            selectedPin = listOfPins[selectedAnnotation]
+            performSegue(withIdentifier: "pinTappedSegue", sender: self)
         }
     }
     

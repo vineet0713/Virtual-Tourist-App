@@ -35,12 +35,12 @@ class PhotosViewController: UIViewController {
         
         // Do any additional setup after loading the view.
         
-        collection.dataSource = self
-        collection.delegate = self
-        
         // makes the map "static"
         map.isZoomEnabled = false
         map.isScrollEnabled = false
+        
+        collection.dataSource = self
+        collection.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -78,7 +78,7 @@ class PhotosViewController: UIViewController {
         // order doesn't matter, so no need to use NSSortDescriptors
         fetchRequest.sortDescriptors = []
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: "\(pin)-photos")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         
         do {
@@ -140,6 +140,6 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 extension PhotosViewController: NSFetchedResultsControllerDelegate {
     
-    
+    // (CollectionViews don't have functions 'beginUpdates()' or 'endUpdates()', like TableViews!)
     
 }
