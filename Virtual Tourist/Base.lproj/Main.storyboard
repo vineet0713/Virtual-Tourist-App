@@ -53,6 +53,11 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="CfN-Fv-7DF">
+                        <barButtonItem key="leftBarButtonItem" title="Clear" id="ipU-c0-Cdp">
+                            <connections>
+                                <action selector="clearPressed:" destination="BYZ-38-t0r" id="rgN-aE-Vwx"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Edit" id="elL-AN-oVe">
                             <connections>
                                 <action selector="editPressed:" destination="BYZ-38-t0r" id="Ahi-Z2-ppn"/>
@@ -60,6 +65,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="clearButton" destination="ipU-c0-Cdp" id="Jaa-NG-I5i"/>
                         <outlet property="editButton" destination="elL-AN-oVe" id="6Q4-OV-SP2"/>
                         <outlet property="map" destination="gEH-WK-JlS" id="BAM-uy-Kkv"/>
                         <segue destination="IT9-P2-7GI" kind="show" identifier="pinTappedSegue" id="pon-kX-BD4"/>

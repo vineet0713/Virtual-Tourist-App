@@ -28,6 +28,7 @@ class MapViewController: UIViewController {
     
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var editButton: UIBarButtonItem!
+    @IBOutlet weak var clearButton: UIBarButtonItem!
     
     // MARK: - Life Cycle
     
@@ -48,29 +49,58 @@ class MapViewController: UIViewController {
         map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, latitudinalDist, longitudinalDist), animated: true)
     }
     
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     // MARK: - IBActions
     
     @IBAction func editPressed(_ sender: Any) {
         editingMode = !editingMode
         if editingMode {
             self.title = "Edit Annotation Pins"
+            clearButton.isEnabled = false
             editButton.title = "Done"
             editButton.style = .done
         } else {
             self.title = "Virtual Tourist"
+            clearButton.isEnabled = true
             editButton.title = "Edit"
             editButton.style = .plain
         }
     }
     
+    @IBAction func clearPressed(_ sender: Any) {
+        let alert = UIAlertController(title: "Confirm Clear", message: "Are you sure you want to clear all pins and their associated photos?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
+            performUIUpdatesOnMain {
+                self.map.removeAnnotations(self.map.annotations)
+            }
+            // update Core Data!
+        }))
+        present(alert, animated: true, completion: nil)
+    }
+    
     // this the IBAction for the Long Press Gesture Recognizer
-    @IBAction func addPin(_ sender: Any) {
-        let location = (sender as! UILongPressGestureRecognizer).location(in: map)
-        let coordinates = map.convert(location, toCoordinateFrom: map)
-        
-        let annotation = PinAnnotation(title: "test", coordinate: coordinates)
-        
-        map.addAnnotation(annotation)
+    @IBAction func addPin(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .ended {
+            let location = sender.location(in: map)
+            let coordinates = map.convert(location, toCoordinateFrom: map)
+            
+            FlickrClient.sharedInstance().getPhotosFromCoordinates(coordinates) { (success, error) in
+                performUIUpdatesOnMain {
+                    if success {
+                        let annotation = PinAnnotation(title: "test", coordinate: coordinates)
+                        self.map.addAnnotation(annotation)
+                    } else {
+                        self.showAlert(title: "Load Failed", message: error!)
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Navigation
@@ -110,20 +140,17 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        if let mapPin = view.annotation as? PinAnnotation {
-            selectedPin = mapPin
-        }
+        selectedPin = view.annotation as! PinAnnotation
         performSegue(withIdentifier: "pinTappedSegue", sender: self)
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if editingMode {
-            let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this annotation pin?", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
             alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
-                // TODO: removing the pin doesn't work!
-                if let mapPin = view.annotation as? PinAnnotation {
-                    self.map.removeAnnotation(mapPin)
+                performUIUpdatesOnMain {
+                    self.map.removeAnnotation(view.annotation!)
                 }
                 // update Core Data!
             }))
@@ -132,4 +159,3 @@ extension MapViewController: MKMapViewDelegate {
     }
     
 }
-
