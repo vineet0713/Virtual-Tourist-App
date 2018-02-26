@@ -11,16 +11,16 @@ import MapKit
 
 class FlickrClient: NSObject {
     
-    // shared session
+    // MARK: - Shared Session
     var session = URLSession.shared
     
-    // MARK: Initializers
+    // MARK: - Initializers
     
     override init() {
         super.init()
     }
     
-    // MARK: Shared Instance
+    // MARK: - Shared Instance
     
     class func sharedInstance() -> FlickrClient {
         struct Singleton {
@@ -29,7 +29,7 @@ class FlickrClient: NSObject {
         return Singleton.sharedInstance
     }
     
-    // MARK: Helper Functions
+    // MARK: - Helper Functions
     
     func getBBoxString(latitude: Double, longitude: Double) -> String {
         var bboxArray: [String] = []
@@ -41,7 +41,7 @@ class FlickrClient: NSObject {
         return bboxArray.joined(separator: ",")
     }
     
-    func parametersFromCoordinates(_ coordinates: CLLocationCoordinate2D) -> [String:Any] {
+    func generateParameters(_ bboxString: String) -> [String:Any] {
         var methodParameters: [String:Any] = [:]
         
         let parameterKeys = FlickrParameterKeys.orderedValues
@@ -49,7 +49,7 @@ class FlickrClient: NSObject {
         
         for i in 0..<parameterKeys.count {
             if parameterValues[i] == "USER_VALUE" {
-                methodParameters[parameterKeys[i]] = getBBoxString(latitude: Double(coordinates.latitude), longitude: Double(coordinates.longitude))
+                methodParameters[parameterKeys[i]] = bboxString
             } else {
                 methodParameters[parameterKeys[i]] = parameterValues[i]
             }

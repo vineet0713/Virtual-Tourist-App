@@ -10,17 +10,23 @@ import UIKit
 
 class DetailViewController: UIViewController {
     
+    // MARK: - Properties
+    
+    var photo: UIImage!
+    var titleString: String!
+    
     // MARK: - IBOutlets
     
-    @IBOutlet weak var photo: UIImageView!
+    @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     
     // MARK: - Life Cycle
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
-        // Do any additional setup after loading the view.
+        photoImageView.image = photo
+        titleLabel.text = titleString
     }
     
 }

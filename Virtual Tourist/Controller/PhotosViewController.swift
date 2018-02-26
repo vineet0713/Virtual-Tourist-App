@@ -8,17 +8,20 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class PhotosViewController: UIViewController {
     
     // MARK: - Properties
     
-    var pinLatitude: CLLocationDegrees!
-    var pinLongitude: CLLocationDegrees!
-    
     // sets the latitudinal and longitudinal distances (for setting map region)
     let latitudinalDist: CLLocationDistance = 5000   // represents 5 thousand meters, or 5 kilometers
     let longitudinalDist: CLLocationDistance = 5000  // represents 5 thousand meters, or 5 kilometers
+    
+    var pin: Pin!
+    var selectedPhoto: Photo!
+    
+    var fetchedResultsController: NSFetchedResultsController<Photo>!
     
     // MARK: - IBOutlets
     
@@ -43,24 +46,58 @@ class PhotosViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let regionLocation = CLLocationCoordinate2DMake(pinLatitude, pinLongitude)
+        let latitude = CLLocationDegrees(pin.latitude)
+        let longitude = CLLocationDegrees(pin.longitude)
+        
+        let regionLocation = CLLocationCoordinate2DMake(latitude, longitude)
         map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, latitudinalDist, longitudinalDist), animated: false)
         
         let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2DMake(pinLatitude, pinLongitude)
+        annotation.coordinate = CLLocationCoordinate2DMake(latitude, longitude)
+        
         map.removeAnnotations(map.annotations)
         map.addAnnotation(annotation)
+        
+        setupFetchResultsController()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        fetchedResultsController = nil
+    }
+    
+    // MARK: - Helper Functions
+    
+    func setupFetchResultsController() {
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
+        
+        // order doesn't matter, so no need to use NSSortDescriptors
+        fetchRequest.sortDescriptors = []
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: "\(pin)-photos")
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        /*
-         if let detailVC = segue.destination as? DetailViewController {
-         
-         }
-         */
+        if let detailVC = segue.destination as? DetailViewController {
+            detailVC.titleString = selectedPhoto.title
+            if let imageData = selectedPhoto.image {
+                detailVC.photo = UIImage(data: imageData)
+            }
+        }
     }
     
 }
@@ -70,13 +107,20 @@ class PhotosViewController: UIViewController {
 extension PhotosViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        if let section = fetchedResultsController.sections?[section] {
+            return section.numberOfObjects
+        } else {
+            return 0
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath)
+        let photo = fetchedResultsController.object(at: indexPath)
+        let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCollectionViewCell
         
-        
+        if let imageData = photo.image {
+            cell.photoImageView.image = UIImage(data: imageData)
+        }
         
         return cell
     }
@@ -88,8 +132,14 @@ extension PhotosViewController: UICollectionViewDataSource {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // set selected cell
+        selectedPhoto = fetchedResultsController.object(at: indexPath)
         performSegue(withIdentifier: "photosToDetailSegue", sender: self)
     }
+    
+}
+
+extension PhotosViewController: NSFetchedResultsControllerDelegate {
+    
+    
     
 }

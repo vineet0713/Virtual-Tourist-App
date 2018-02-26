@@ -13,8 +13,9 @@ extension FlickrClient {
     
     // MARK: - Get Photos Method
     
-    func getPhotosFromCoordinates(_ coordinates: CLLocationCoordinate2D, completionHandler: @escaping (_ success: Bool, _ errorDescription: String?)->Void) {
-        let methodParameters = parametersFromCoordinates(coordinates)
+    func getPhotosFromPin(_ pin: Pin, completionHandler: @escaping (_ success: Bool, _ errorDescription: String?)->Void) {
+        let bboxString = getBBoxString(latitude: pin.latitude, longitude: pin.longitude)
+        let methodParameters = generateParameters(bboxString)
         let request = URLRequest(url: flickrURLFromParameters(methodParameters))
         
         let task = session.dataTask(with: request) { (data, response, error) in
@@ -63,27 +64,35 @@ extension FlickrClient {
                 return
             }
             
-            print(photoArray)
-            
-            /*
-            let photoDictionary = photoArray[randomPhotoIndex]
-            
-            guard let imageURLString = photoDictionary[Constants.FlickrResponseKeys.MediumURL] as? String else {
-                print("Could not find key \(Constants.FlickrResponseKeys.MediumURL).")
-                return
+            for photo in photoArray {
+                guard let imageURLString = photo[FlickrResponseKeys.MediumURL] as? String else {
+                    completionHandler(false, "Could not find key \(FlickrResponseKeys.MediumURL).")
+                    return
+                }
+                
+                guard let imageTitleString = photo[FlickrResponseKeys.Title] as? String else {
+                    completionHandler(false, "Could not find key \(FlickrResponseKeys.Title).")
+                    return
+                }
+                
+                let imageURL = URL(string: imageURLString)!
+                guard let imageData = try? Data(contentsOf: imageURL) else {
+                    completionHandler(false, "Could not get image data.")
+                    return
+                }
+                
+                // initializes the new Photo
+                let newPhoto = Photo(context: DataController.sharedInstance().viewContext)
+                newPhoto.image = imageData
+                newPhoto.title = imageTitleString
+                newPhoto.pin = pin
+                
+                // tries to save the Photo to Core Data
+                guard DataController.sharedInstance().saveViewContext() else {
+                    completionHandler(false, "Could not save the Photo to Core Data.")
+                    return
+                }
             }
-            
-            guard let imageTitleString = photoDictionary[Constants.FlickrResponseKeys.Title] as? String else {
-                print("Could not find key \(Constants.FlickrResponseKeys.Title).")
-                return
-            }
-            
-            let imageURL = URL(string: imageURLString)!
-            guard let imageData = try? Data(contentsOf: imageURL) else {
-                print("Could not get image data.")
-                return
-            }
-            */
             
             completionHandler(true, nil)
         }

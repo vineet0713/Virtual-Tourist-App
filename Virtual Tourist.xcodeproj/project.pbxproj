@@ -26,6 +26,7 @@
 		65CD679B20437F5E0011107D /* FlickrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679A20437F5E0011107D /* FlickrConstants.swift */; };
 		65CD679D20437FFE0011107D /* FlickrConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679C20437FFE0011107D /* FlickrConvenience.swift */; };
 		65CD679F20438CEF0011107D /* GCDBlackBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679E20438CEF0011107D /* GCDBlackBox.swift */; };
+		65CD67A1204396C20011107D /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD67A0204396C20011107D /* DataController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 		65CD679A20437F5E0011107D /* FlickrConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrConstants.swift; sourceTree = "<group>"; };
 		65CD679C20437FFE0011107D /* FlickrConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrConvenience.swift; sourceTree = "<group>"; };
 		65CD679E20438CEF0011107D /* GCDBlackBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GCDBlackBox.swift; sourceTree = "<group>"; };
+		65CD67A0204396C20011107D /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,7 +134,6 @@
 				65CD675D20433AA30011107D /* Assets.xcassets */,
 				65CD675F20433AA30011107D /* LaunchScreen.storyboard */,
 				65CD676220433AA30011107D /* Info.plist */,
-				65CD675A20433AA30011107D /* Virtual_Tourist.xcdatamodeld */,
 			);
 			path = "Virtual Tourist";
 			sourceTree = "<group>";
@@ -166,6 +167,8 @@
 		65CD678720434C000011107D /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				65CD675A20433AA30011107D /* Virtual_Tourist.xcdatamodeld */,
+				65CD67A0204396C20011107D /* DataController.swift */,
 				65CD678A20434C580011107D /* Clients */,
 			);
 			path = Model;
@@ -356,6 +359,7 @@
 				65CD679B20437F5E0011107D /* FlickrConstants.swift in Sources */,
 				65CD678D20434C930011107D /* PhotosViewController.swift in Sources */,
 				65CD678F20434CA90011107D /* PlacesViewController.swift in Sources */,
+				65CD67A1204396C20011107D /* DataController.swift in Sources */,
 				65CD679320436F1C0011107D /* PlaceTableViewCell.swift in Sources */,
 				65CD6791204352690011107D /* DetailViewController.swift in Sources */,
 				65CD675C20433AA30011107D /* Virtual_Tourist.xcdatamodeld in Sources */,

@@ -182,7 +182,7 @@
                         <viewLayoutGuide key="safeArea" id="RJS-vN-8er"/>
                     </view>
                     <connections>
-                        <outlet property="photo" destination="PMk-bg-EJE" id="mIO-sq-s9x"/>
+                        <outlet property="photoImageView" destination="PMk-bg-EJE" id="Yok-jB-jgZ"/>
                         <outlet property="titleLabel" destination="Ai3-6i-Qsq" id="0Ec-CO-iQe"/>
                     </connections>
                 </viewController>
