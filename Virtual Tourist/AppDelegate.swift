@@ -18,8 +18,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let centerAmericaLong: Float = -98.5795
     
     // sets the latitudinal and longitudinal distances (for setting map region)
-    let defaultLatitudeDelta: Float = 5000000   // represents 5 million meters, or 5 thousand kilometers
-    let defaultLongitudeDelta: Float = 5000000  // represents 5 million meters, or 5 thousand kilometers
+    let defaultSpanLatitudeDelta: Float = 70.1593   // represents 5 million meters, or 5 thousand kilometers
+    let defaultSpanLongitudeDelta: Float = 58.4062  // represents 5 million meters, or 5 thousand kilometers
     
     func checkIfFirstLaunch() {
         if UserDefaults.standard.bool(forKey: "hasLaunchedBefore") == false {
@@ -28,8 +28,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             UserDefaults.standard.set(centerAmericaLat, forKey: "Region Center Latitude")
             UserDefaults.standard.set(centerAmericaLong, forKey: "Region Center Longitude")
-            UserDefaults.standard.set(defaultLatitudeDelta, forKey: "Region Span Latitude Delta")
-            UserDefaults.standard.set(defaultLongitudeDelta, forKey: "Region Span Longitude Delta")
+            UserDefaults.standard.set(defaultSpanLatitudeDelta, forKey: "Region Span Latitude Delta")
+            UserDefaults.standard.set(defaultSpanLongitudeDelta, forKey: "Region Span Longitude Delta")
             
             UserDefaults.standard.synchronize()
         }

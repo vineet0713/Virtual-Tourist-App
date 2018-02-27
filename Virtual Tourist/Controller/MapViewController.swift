@@ -90,18 +90,11 @@ class MapViewController: UIViewController {
     func setMapState() {
         let regionCenterLat = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Latitude"))
         let regionCenterLong = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Longitude"))
-        let regionSpanLatDelta = CLLocationDistance(UserDefaults.standard.float(forKey: "Region Span Latitude Delta"))
-        let regionSpanLongDelta = CLLocationDistance(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
-        // these automatically get casted to CLLocationDegrees
-        
-        print("\nMap will set state")
-        print("\(regionCenterLat)")
-        print("\(regionCenterLong)")
-        print("\(regionSpanLatDelta)")
-        print("\(regionSpanLongDelta)")
+        let regionSpanLatDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Latitude Delta"))
+        let regionSpanLongDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
         
         let regionLocation = CLLocationCoordinate2DMake(regionCenterLat, regionCenterLong)
-        map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, regionSpanLatDelta, regionSpanLongDelta), animated: true)
+        map.setRegion(MKCoordinateRegionMake(regionLocation, MKCoordinateSpanMake(regionSpanLatDelta, regionSpanLongDelta)), animated: true)
     }
     
     func saveMapState() {
@@ -109,27 +102,9 @@ class MapViewController: UIViewController {
         UserDefaults.standard.set(Float(regionCenter.latitude), forKey: "Region Center Latitude")
         UserDefaults.standard.set(Float(regionCenter.longitude), forKey: "Region Center Longitude")
         
-        // OLD
         let regionSpan = map.region.span
         UserDefaults.standard.set(Float(regionSpan.latitudeDelta), forKey: "Region Span Latitude Delta")
         UserDefaults.standard.set(Float(regionSpan.longitudeDelta), forKey: "Region Span Longitude Delta")
-        
-        // NEW
-        let zoomValue = log2(360 * map.frame.size.width / CGFloat(map.region.span.longitudeDelta * 128))
-        
-        let deltaLatitude = map.frame.size.height / (pow(2, zoomValue) * 128 / 360)
-        let deltaLongitude = map.frame.size.width / (pow(2, zoomValue) * 128 / 360)
-        UserDefaults.standard.set(Float(deltaLatitude), forKey: "Region Span Latitude Delta")
-        UserDefaults.standard.set(Float(deltaLongitude), forKey: "Region Span Longitude Delta")
-        
-        print("\nMap will save state")
-        print("\(Float(regionCenter.latitude))")
-        print("\(Float(regionCenter.longitude))")
-        print("\(Float(regionSpan.latitudeDelta))")
-        print("\(Float(regionSpan.longitudeDelta))")
-        print("New:")
-        print("\(deltaLatitude)")
-        print("\(deltaLongitude)")
     }
     
     func showAlert(title: String, message: String) {
@@ -226,11 +201,9 @@ class MapViewController: UIViewController {
 
 extension MapViewController: MKMapViewDelegate {
     
-    /*
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
         saveMapState()
     }
-    */
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if photosAreLoaded {
