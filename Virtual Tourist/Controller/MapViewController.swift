@@ -14,17 +14,11 @@ class MapViewController: UIViewController {
     
     // MARK: - Properties
     
-    let centerAmericaLat: CLLocationDegrees = 39.8283
-    let centerAmericaLong: CLLocationDegrees = -98.5795
-    
-    // sets the latitudinal and longitudinal distances (for setting map region)
-    let latitudinalDist: CLLocationDistance = 5000000   // represents 5 million meters, or 5 thousand kilometers
-    let longitudinalDist: CLLocationDistance = 5000000  // represents 5 million meters, or 5 thousand kilometers
-    
     var listOfPins: [MKPointAnnotation:Pin] = [:]
     var selectedPin: Pin!
     
     var editingMode: Bool!
+    var photosAreLoaded: Bool!
         
     // MARK: - IBOutlets
     
@@ -39,9 +33,10 @@ class MapViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         map.delegate = self
-        setDefaultRegion()
+        setMapState()
         
         editingMode = false
+        photosAreLoaded = true
         
         makeFetchRequest()
     }
@@ -84,17 +79,57 @@ class MapViewController: UIViewController {
     }
     
     func deletePin(annotationToDelete: MKPointAnnotation) {
-        let pinToDelete = self.listOfPins[annotationToDelete]!
-        DataController.sharedInstance().viewContext.delete(pinToDelete)
+        let pinToDelete = self.listOfPins.removeValue(forKey: annotationToDelete)
+        DataController.sharedInstance().viewContext.delete(pinToDelete!)
         guard DataController.sharedInstance().saveViewContext() else {
             self.showAlert(title: "Save Failed", message: "Unable to remove the pin.")
             return
         }
     }
     
-    func setDefaultRegion() {
-        let regionLocation = CLLocationCoordinate2DMake(centerAmericaLat, centerAmericaLong)
-        map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, latitudinalDist, longitudinalDist), animated: true)
+    func setMapState() {
+        let regionCenterLat = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Latitude"))
+        let regionCenterLong = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Longitude"))
+        let regionSpanLatDelta = CLLocationDistance(UserDefaults.standard.float(forKey: "Region Span Latitude Delta"))
+        let regionSpanLongDelta = CLLocationDistance(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
+        // these automatically get casted to CLLocationDegrees
+        
+        print("\nMap will set state")
+        print("\(regionCenterLat)")
+        print("\(regionCenterLong)")
+        print("\(regionSpanLatDelta)")
+        print("\(regionSpanLongDelta)")
+        
+        let regionLocation = CLLocationCoordinate2DMake(regionCenterLat, regionCenterLong)
+        map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, regionSpanLatDelta, regionSpanLongDelta), animated: true)
+    }
+    
+    func saveMapState() {
+        let regionCenter = map.region.center
+        UserDefaults.standard.set(Float(regionCenter.latitude), forKey: "Region Center Latitude")
+        UserDefaults.standard.set(Float(regionCenter.longitude), forKey: "Region Center Longitude")
+        
+        // OLD
+        let regionSpan = map.region.span
+        UserDefaults.standard.set(Float(regionSpan.latitudeDelta), forKey: "Region Span Latitude Delta")
+        UserDefaults.standard.set(Float(regionSpan.longitudeDelta), forKey: "Region Span Longitude Delta")
+        
+        // NEW
+        let zoomValue = log2(360 * map.frame.size.width / CGFloat(map.region.span.longitudeDelta * 128))
+        
+        let deltaLatitude = map.frame.size.height / (pow(2, zoomValue) * 128 / 360)
+        let deltaLongitude = map.frame.size.width / (pow(2, zoomValue) * 128 / 360)
+        UserDefaults.standard.set(Float(deltaLatitude), forKey: "Region Span Latitude Delta")
+        UserDefaults.standard.set(Float(deltaLongitude), forKey: "Region Span Longitude Delta")
+        
+        print("\nMap will save state")
+        print("\(Float(regionCenter.latitude))")
+        print("\(Float(regionCenter.longitude))")
+        print("\(Float(regionSpan.latitudeDelta))")
+        print("\(Float(regionSpan.longitudeDelta))")
+        print("New:")
+        print("\(deltaLatitude)")
+        print("\(deltaLongitude)")
     }
     
     func showAlert(title: String, message: String) {
@@ -138,8 +173,14 @@ class MapViewController: UIViewController {
     // this the IBAction for the Long Press Gesture Recognizer
     @IBAction func addPin(_ sender: UILongPressGestureRecognizer) {
         if sender.state == .ended {
+            photosAreLoaded = false
+            
             let location = sender.location(in: map)
             let coordinates = map.convert(location, toCoordinateFrom: map)
+            
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinates
+            self.map.addAnnotation(annotation)
             
             // initializes the new Pin
             let newPin = Pin(context: DataController.sharedInstance().viewContext)
@@ -152,16 +193,16 @@ class MapViewController: UIViewController {
                 return
             }
             
+            listOfPins[annotation] = newPin
+            
             FlickrClient.sharedInstance().getPhotosFromPin(newPin) { (success, error) in
                 performUIUpdatesOnMain {
-                    if success {
-                        let annotation = MKPointAnnotation()
-                        annotation.coordinate = coordinates
-                        self.map.addAnnotation(annotation)
-                        self.listOfPins[annotation] = newPin
-                    } else {
+                    if success == false {
+                        self.map.removeAnnotation(annotation)
+                        self.deletePin(annotationToDelete: annotation)
                         self.showAlert(title: "Load Failed", message: error!)
                     }
+                    self.photosAreLoaded = true
                 }
             }
         }
@@ -185,22 +226,36 @@ class MapViewController: UIViewController {
 
 extension MapViewController: MKMapViewDelegate {
     
+    /*
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        saveMapState()
+    }
+    */
+    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if editingMode {
-            let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-            alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
-                performUIUpdatesOnMain {
-                    self.map.removeAnnotation(view.annotation!)
-                }
-                // update Core Data
-                self.deletePin(annotationToDelete: view.annotation! as! MKPointAnnotation)
+        if photosAreLoaded {
+            if editingMode {
+                let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
+                    performUIUpdatesOnMain {
+                        self.map.removeAnnotation(view.annotation!)
+                    }
+                    // update Core Data
+                    self.deletePin(annotationToDelete: view.annotation! as! MKPointAnnotation)
+                }))
+                present(alert, animated: true, completion: nil)
+            } else {
+                let selectedAnnotation = view.annotation! as! MKPointAnnotation
+                selectedPin = listOfPins[selectedAnnotation]
+                performSegue(withIdentifier: "pinTappedSegue", sender: self)
+            }
+        } else {
+            let alert = UIAlertController(title: "Loading in Progress", message: "Photos are still being downloaded for this pin.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { (action) in
+                view.setSelected(false, animated: true)
             }))
             present(alert, animated: true, completion: nil)
-        } else {
-            let selectedAnnotation = view.annotation! as! MKPointAnnotation
-            selectedPin = listOfPins[selectedAnnotation]
-            performSegue(withIdentifier: "pinTappedSegue", sender: self)
         }
     }
     

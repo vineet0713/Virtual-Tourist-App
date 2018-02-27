@@ -19,9 +19,10 @@ class PlacesViewController: UIViewController {
     let longitudinalDist: CLLocationDistance = 5000  // represents 5 thousand meters, or 5 kilometers
     
     var pin: Pin!
+    var photos: [Photo] = []
     var selectedPhoto: Photo!
     
-    var fetchedResultsController: NSFetchedResultsController<Photo>!
+    var refreshControl: UIRefreshControl!
     
     // MARK: - IBOutlets
     
@@ -41,6 +42,10 @@ class PlacesViewController: UIViewController {
         
         table.dataSource = self
         table.delegate = self
+        
+        tabBarController?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refresh))
+        
+        setupRefreshControl()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -58,18 +63,19 @@ class PlacesViewController: UIViewController {
         map.removeAnnotations(map.annotations)
         map.addAnnotation(annotation)
         
-        setupFetchResultsController()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        fetchedResultsController = nil
+        makeFetchRequest()
     }
     
     // MARK: - Helper Functions
     
-    func setupFetchResultsController() {
+    func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.addTarget(self, action: #selector(refresh), for: UIControlEvents.valueChanged)
+        table.addSubview(refreshControl)
+    }
+    
+    func makeFetchRequest() {
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         
         let predicate = NSPredicate(format: "pin == %@", pin)
@@ -78,18 +84,48 @@ class PlacesViewController: UIViewController {
         // order doesn't matter, so no need to use NSSortDescriptors
         fetchRequest.sortDescriptors = []
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DataController.sharedInstance().viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        fetchedResultsController.delegate = self
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        if let result = try? DataController.sharedInstance().viewContext.fetch(fetchRequest) {
+            photos = result
+            table.reloadData()
+        } else {
+            fatalError("The fetch could not be performed.")
         }
     }
     
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Selector Functions
+    
+    @objc func refresh() {
+        for photo in photos {
+            DataController.sharedInstance().viewContext.delete(photo)
+            guard DataController.sharedInstance().saveViewContext() else {
+                showAlert(title: "Save Failed", message: "Unable to remove the pin.")
+                return
+            }
+        }
+        photos.removeAll()
+        
+        table.reloadData()
+        
+        FlickrClient.sharedInstance().getPhotosFromPin(pin) { (success, error) in
+            performUIUpdatesOnMain {
+                if success {
+                    self.makeFetchRequest()
+                } else {
+                    self.showAlert(title: "Load Failed", message: error!)
+                }
+            }
+        }
+        refreshControl.endRefreshing()
+    }
+    
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let detailVC = segue.destination as? DetailViewController {
@@ -107,15 +143,11 @@ class PlacesViewController: UIViewController {
 extension PlacesViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let section = fetchedResultsController.sections?[section] {
-            return section.numberOfObjects
-        } else {
-            return 0
-        }
+        return photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let photo = fetchedResultsController.object(at: indexPath)
+        let photo = photos[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "placeCell", for: indexPath) as! PlaceTableViewCell
         
         cell.titleLabel.text = photo.title
@@ -131,20 +163,8 @@ extension PlacesViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         table.deselectRow(at: indexPath, animated: false)
-        selectedPhoto = fetchedResultsController.object(at: indexPath)
+        selectedPhoto = photos[indexPath.row]
         performSegue(withIdentifier: "placesToDetailSegue", sender: self)
-    }
-    
-}
-
-extension PlacesViewController: NSFetchedResultsControllerDelegate {
-    
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        table.beginUpdates()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        table.endUpdates()
     }
     
 }

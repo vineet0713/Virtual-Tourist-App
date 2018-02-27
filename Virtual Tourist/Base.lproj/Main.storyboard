@@ -200,12 +200,9 @@
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="u67-We-cKh">
                                 <rect key="frame" x="0.0" y="64" width="375" height="150"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="150" id="cWO-PY-a5k"/>
-                                </constraints>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Kap-cV-cNa">
-                                <rect key="frame" x="0.0" y="222" width="375" height="396"/>
+                                <rect key="frame" x="16" y="222" width="343" height="396"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="b0W-hj-o5s">
                                     <size key="itemSize" width="100" height="100"/>
@@ -227,10 +224,10 @@
                                             </subviews>
                                         </view>
                                         <constraints>
-                                            <constraint firstAttribute="trailing" secondItem="JkL-Ol-eOz" secondAttribute="trailing" id="W4n-l9-mSz"/>
-                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="leading" secondItem="8v0-VS-ZAM" secondAttribute="leading" id="eWx-TH-t0v"/>
-                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="top" secondItem="8v0-VS-ZAM" secondAttribute="top" id="feS-gM-wx6"/>
-                                            <constraint firstAttribute="bottom" secondItem="JkL-Ol-eOz" secondAttribute="bottom" id="tQP-e3-XY6"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="top" secondItem="8v0-VS-ZAM" secondAttribute="top" id="Ngr-yS-iKn"/>
+                                            <constraint firstAttribute="bottom" secondItem="JkL-Ol-eOz" secondAttribute="bottom" id="lEp-ge-NHk"/>
+                                            <constraint firstAttribute="trailing" secondItem="JkL-Ol-eOz" secondAttribute="trailing" id="nNi-r2-DWY"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="leading" secondItem="8v0-VS-ZAM" secondAttribute="leading" id="ycm-3G-k9h"/>
                                         </constraints>
                                         <connections>
                                             <outlet property="photoImageView" destination="JkL-Ol-eOz" id="LMC-iU-gur"/>
@@ -238,21 +235,28 @@
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="eFl-8o-jDY">
+                                <rect key="frame" x="177" y="410" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="trailing" secondItem="Kap-cV-cNa" secondAttribute="trailing" id="3o7-D1-YvA"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leading" id="5C9-lM-F7x"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="top" secondItem="u67-We-cKh" secondAttribute="bottom" constant="8" symbolic="YES" id="9QH-fW-8sE"/>
-                            <constraint firstAttribute="trailing" secondItem="u67-We-cKh" secondAttribute="trailing" id="XYa-w0-PPD"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="top" secondItem="5jU-uk-a0H" secondAttribute="top" id="i7B-Nh-zSg"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="leading" secondItem="Kap-cV-cNa" secondAttribute="leading" id="k4b-Kw-1GD"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="bottom" secondItem="5jU-uk-a0H" secondAttribute="bottom" id="wNF-MK-MJq"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="centerX" secondItem="eFl-8o-jDY" secondAttribute="centerX" id="98p-Z0-WRI"/>
+                            <constraint firstItem="5jU-uk-a0H" firstAttribute="bottom" secondItem="eFl-8o-jDY" secondAttribute="bottom" constant="188" id="FE7-ri-DKs"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="top" secondItem="u67-We-cKh" secondAttribute="bottom" constant="8" symbolic="YES" id="ODG-Hp-8On"/>
+                            <constraint firstAttribute="trailing" secondItem="u67-We-cKh" secondAttribute="trailing" id="SGJ-Io-4fT"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="bottom" secondItem="5jU-uk-a0H" secondAttribute="bottom" id="ZXd-4X-Hme"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="centerX" secondItem="eFl-8o-jDY" secondAttribute="centerX" id="hye-aK-TQs"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leadingMargin" id="n7G-Y9-pFn"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="centerY" secondItem="eFl-8o-jDY" secondAttribute="centerY" id="v8U-QG-sTi"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="top" secondItem="5jU-uk-a0H" secondAttribute="top" id="vXE-A5-eoN"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leading" id="w5v-57-0yg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="5jU-uk-a0H"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Photos" id="cL9-WJ-3ux"/>
                     <connections>
+                        <outlet property="activityIndicator" destination="eFl-8o-jDY" id="ITJ-ag-bB1"/>
                         <outlet property="collection" destination="Kap-cV-cNa" id="7SD-Yc-GtS"/>
                         <outlet property="map" destination="u67-We-cKh" id="xeE-Db-Cog"/>
                         <segue destination="2js-aE-BeK" kind="show" identifier="photosToDetailSegue" id="Ecp-lz-crF"/>
