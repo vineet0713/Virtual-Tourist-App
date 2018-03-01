@@ -33,7 +33,7 @@ extension FlickrClient {
         static let Format = "format"
         static let NoJSONCallback = "nojsoncallback"
         static let Page = "page"
-        static let orderedValues = [Method, APIKey, BoundingBox, PerPage, SafeSearch, Extras, Format, NoJSONCallback]
+        static let orderedValues = [Method, APIKey, BoundingBox, SafeSearch, Extras, Format, NoJSONCallback]
     }
     
     // MARK: - Parameter Values
@@ -47,7 +47,7 @@ extension FlickrClient {
         static let MediumURL = "url_m"
         static let ResponseFormat = "json"
         static let DisableJSONCallback = "1" /* 1 means "yes" */
-        static let orderedValues = [SearchMethod, APIKey, BoundingBox, "\(PerPage)", UseSafeSearch, MediumURL, ResponseFormat, DisableJSONCallback]
+        static let orderedValues = [SearchMethod, APIKey, BoundingBox, UseSafeSearch, MediumURL, ResponseFormat, DisableJSONCallback]
     }
     
     // MARK: - Response Keys

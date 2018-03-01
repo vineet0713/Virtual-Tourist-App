@@ -153,7 +153,11 @@ extension PlacesViewController: UITableViewDataSource {
         let photo = photos[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "placeCell", for: indexPath) as! PlaceTableViewCell
         
-        cell.titleLabel.text = photo.title
+        if photo.title == "" {
+            cell.titleLabel.text = "[untitled]"
+        } else {
+            cell.titleLabel.text = photo.title
+        }
         
         return cell
     }

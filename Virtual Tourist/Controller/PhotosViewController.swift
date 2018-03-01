@@ -151,8 +151,10 @@ extension PhotosViewController: UICollectionViewDataSource {
         if photosAreLoading {
             cell.photoImageView.image = nil
             cell.activityIndicator.isHidden = false
+            cell.activityIndicator.startAnimating()
         } else {
             cell.activityIndicator.isHidden = true
+            cell.activityIndicator.stopAnimating()
             
             let photo = photos[indexPath.row]
             if let imageData = photo.image {
