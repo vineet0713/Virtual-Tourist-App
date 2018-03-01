@@ -40,8 +40,7 @@ class PlacesViewController: UIViewController {
         map.isZoomEnabled = false
         map.isScrollEnabled = false
         
-        table.dataSource = self
-        table.delegate = self
+        // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
         
         tabBarController?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refresh))
         
@@ -51,6 +50,14 @@ class PlacesViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        setupMap()
+        
+        makeFetchRequest()
+    }
+    
+    // MARK: - Helper Functions
+    
+    func setupMap() {
         let latitude = CLLocationDegrees(pin.latitude)
         let longitude = CLLocationDegrees(pin.longitude)
         
@@ -62,11 +69,7 @@ class PlacesViewController: UIViewController {
         
         map.removeAnnotations(map.annotations)
         map.addAnnotation(annotation)
-        
-        makeFetchRequest()
     }
-    
-    // MARK: - Helper Functions
     
     func setupRefreshControl() {
         refreshControl = UIRefreshControl()

@@ -124,6 +124,10 @@
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="atD-ww-7Dq" id="orx-EC-3NI"/>
+                                    <outlet property="delegate" destination="atD-ww-7Dq" id="fJ1-ry-tdS"/>
+                                </connections>
                             </tableView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -188,7 +192,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4DY-Lu-hpA" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2925.5999999999999" y="133.5832083958021"/>
+            <point key="canvasLocation" x="2924" y="466"/>
         </scene>
         <!--Photos-->
         <scene sceneID="c9N-au-X2Y">
@@ -200,6 +204,9 @@
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="u67-We-cKh">
                                 <rect key="frame" x="0.0" y="64" width="375" height="150"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="150" id="lBN-N4-ASb"/>
+                                </constraints>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Kap-cV-cNa">
                                 <rect key="frame" x="16" y="222" width="343" height="396"/>
@@ -221,45 +228,47 @@
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="JkL-Ol-eOz">
                                                     <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
                                                 </imageView>
+                                                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="TW8-sC-rdQ">
+                                                    <rect key="frame" x="40" y="40" width="20" height="20"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
                                         <constraints>
-                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="top" secondItem="8v0-VS-ZAM" secondAttribute="top" id="Ngr-yS-iKn"/>
-                                            <constraint firstAttribute="bottom" secondItem="JkL-Ol-eOz" secondAttribute="bottom" id="lEp-ge-NHk"/>
-                                            <constraint firstAttribute="trailing" secondItem="JkL-Ol-eOz" secondAttribute="trailing" id="nNi-r2-DWY"/>
-                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="leading" secondItem="8v0-VS-ZAM" secondAttribute="leading" id="ycm-3G-k9h"/>
+                                            <constraint firstAttribute="bottom" secondItem="JkL-Ol-eOz" secondAttribute="bottom" id="5cw-TP-p8N"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="top" secondItem="8v0-VS-ZAM" secondAttribute="top" id="8eA-kq-bSQ"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="centerX" secondItem="TW8-sC-rdQ" secondAttribute="centerX" id="Abd-HA-2w0"/>
+                                            <constraint firstAttribute="trailing" secondItem="JkL-Ol-eOz" secondAttribute="trailing" id="Zmg-1g-mrX"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="leading" secondItem="8v0-VS-ZAM" secondAttribute="leading" id="fv6-V2-9Yc"/>
+                                            <constraint firstItem="JkL-Ol-eOz" firstAttribute="centerY" secondItem="TW8-sC-rdQ" secondAttribute="centerY" id="xHb-6u-eCq"/>
                                         </constraints>
                                         <connections>
+                                            <outlet property="activityIndicator" destination="TW8-sC-rdQ" id="PVZ-d6-ZYZ"/>
                                             <outlet property="photoImageView" destination="JkL-Ol-eOz" id="LMC-iU-gur"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
+                                <connections>
+                                    <outlet property="dataSource" destination="4gy-di-G7C" id="X62-ke-fUZ"/>
+                                    <outlet property="delegate" destination="4gy-di-G7C" id="f2V-4B-9m0"/>
+                                </connections>
                             </collectionView>
-                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="eFl-8o-jDY">
-                                <rect key="frame" x="177" y="410" width="20" height="20"/>
-                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="centerX" secondItem="eFl-8o-jDY" secondAttribute="centerX" id="98p-Z0-WRI"/>
-                            <constraint firstItem="5jU-uk-a0H" firstAttribute="bottom" secondItem="eFl-8o-jDY" secondAttribute="bottom" constant="188" id="FE7-ri-DKs"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="top" secondItem="u67-We-cKh" secondAttribute="bottom" constant="8" symbolic="YES" id="ODG-Hp-8On"/>
-                            <constraint firstAttribute="trailing" secondItem="u67-We-cKh" secondAttribute="trailing" id="SGJ-Io-4fT"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="bottom" secondItem="5jU-uk-a0H" secondAttribute="bottom" id="ZXd-4X-Hme"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="centerX" secondItem="eFl-8o-jDY" secondAttribute="centerX" id="hye-aK-TQs"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leadingMargin" id="n7G-Y9-pFn"/>
-                            <constraint firstItem="Kap-cV-cNa" firstAttribute="centerY" secondItem="eFl-8o-jDY" secondAttribute="centerY" id="v8U-QG-sTi"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="top" secondItem="5jU-uk-a0H" secondAttribute="top" id="vXE-A5-eoN"/>
-                            <constraint firstItem="u67-We-cKh" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leading" id="w5v-57-0yg"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leading" id="4Ag-FA-iTn"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="top" secondItem="u67-We-cKh" secondAttribute="bottom" constant="8" symbolic="YES" id="fHg-GB-mUy"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="bottom" secondItem="5jU-uk-a0H" secondAttribute="bottom" id="fyg-MP-ktj"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="top" secondItem="5jU-uk-a0H" secondAttribute="top" id="jYj-NX-jDh"/>
+                            <constraint firstItem="u67-We-cKh" firstAttribute="centerX" secondItem="Kap-cV-cNa" secondAttribute="centerX" id="kFx-Q0-tQ1"/>
+                            <constraint firstItem="Kap-cV-cNa" firstAttribute="leading" secondItem="cIz-bx-z1S" secondAttribute="leadingMargin" id="pIo-ls-e72"/>
+                            <constraint firstAttribute="trailing" secondItem="u67-We-cKh" secondAttribute="trailing" id="rSb-fa-gfQ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="5jU-uk-a0H"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Photos" id="cL9-WJ-3ux"/>
                     <connections>
-                        <outlet property="activityIndicator" destination="eFl-8o-jDY" id="ITJ-ag-bB1"/>
                         <outlet property="collection" destination="Kap-cV-cNa" id="7SD-Yc-GtS"/>
                         <outlet property="map" destination="u67-We-cKh" id="xeE-Db-Cog"/>
-                        <segue destination="2js-aE-BeK" kind="show" identifier="photosToDetailSegue" id="Ecp-lz-crF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DsJ-3j-b92" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -285,7 +294,4 @@
             <point key="canvasLocation" x="1074" y="134"/>
         </scene>
     </scenes>
-    <inferredMetricsTieBreakers>
-        <segue reference="Ecp-lz-crF"/>
-    </inferredMetricsTieBreakers>
 </document>

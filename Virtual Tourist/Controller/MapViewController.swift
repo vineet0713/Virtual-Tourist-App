@@ -18,8 +18,7 @@ class MapViewController: UIViewController {
     var selectedPin: Pin!
     
     var editingMode: Bool!
-    var photosAreLoaded: Bool!
-        
+    
     // MARK: - IBOutlets
     
     @IBOutlet weak var map: MKMapView!
@@ -36,7 +35,6 @@ class MapViewController: UIViewController {
         setMapState()
         
         editingMode = false
-        photosAreLoaded = true
         
         makeFetchRequest()
     }
@@ -147,9 +145,7 @@ class MapViewController: UIViewController {
     
     // this the IBAction for the Long Press Gesture Recognizer
     @IBAction func addPin(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == .ended {
-            photosAreLoaded = false
-            
+        if sender.state == .began {
             let location = sender.location(in: map)
             let coordinates = map.convert(location, toCoordinateFrom: map)
             
@@ -170,16 +166,16 @@ class MapViewController: UIViewController {
             
             listOfPins[annotation] = newPin
             
-            FlickrClient.sharedInstance().getPhotosFromPin(newPin) { (success, error) in
+            FlickrClient.sharedInstance().getPhotoCountForPin(newPin, completionHandler: { (success, error) in
                 performUIUpdatesOnMain {
                     if success == false {
+                        // this means that either an error happened, or there are 0 photos for these coordinates
                         self.map.removeAnnotation(annotation)
                         self.deletePin(annotationToDelete: annotation)
                         self.showAlert(title: "Load Failed", message: error!)
                     }
-                    self.photosAreLoaded = true
                 }
-            }
+            })
         }
     }
     
@@ -206,29 +202,21 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if photosAreLoaded {
-            if editingMode {
-                let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-                alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
-                    performUIUpdatesOnMain {
-                        self.map.removeAnnotation(view.annotation!)
-                    }
-                    // update Core Data
-                    self.deletePin(annotationToDelete: view.annotation! as! MKPointAnnotation)
-                }))
-                present(alert, animated: true, completion: nil)
-            } else {
-                let selectedAnnotation = view.annotation! as! MKPointAnnotation
-                selectedPin = listOfPins[selectedAnnotation]
-                performSegue(withIdentifier: "pinTappedSegue", sender: self)
-            }
-        } else {
-            let alert = UIAlertController(title: "Loading in Progress", message: "Photos are still being downloaded for this pin.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { (action) in
-                view.setSelected(false, animated: true)
+        if editingMode {
+            let alert = UIAlertController(title: "Confirm Delete", message: "Are you sure you want to remove this pin?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
+                performUIUpdatesOnMain {
+                    self.map.removeAnnotation(view.annotation!)
+                }
+                // update Core Data
+                self.deletePin(annotationToDelete: view.annotation! as! MKPointAnnotation)
             }))
             present(alert, animated: true, completion: nil)
+        } else {
+            let selectedAnnotation = view.annotation! as! MKPointAnnotation
+            selectedPin = listOfPins[selectedAnnotation]
+            performSegue(withIdentifier: "pinTappedSegue", sender: self)
         }
     }
     

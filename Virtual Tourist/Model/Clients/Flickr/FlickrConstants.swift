@@ -42,12 +42,12 @@ extension FlickrClient {
         static let APIKey = "91106059e4adb221703c6b0a1326a5ae" /* MY API KEY */
         static let GalleryID = "5704-72157622566655097"
         static let BoundingBox = "USER_VALUE"
-        static let PerPage = "10"
+        static let PerPage = 10
         static let UseSafeSearch = "1"
         static let MediumURL = "url_m"
         static let ResponseFormat = "json"
         static let DisableJSONCallback = "1" /* 1 means "yes" */
-        static let orderedValues = [SearchMethod, APIKey, BoundingBox, PerPage, UseSafeSearch, MediumURL, ResponseFormat, DisableJSONCallback]
+        static let orderedValues = [SearchMethod, APIKey, BoundingBox, "\(PerPage)", UseSafeSearch, MediumURL, ResponseFormat, DisableJSONCallback]
     }
     
     // MARK: - Response Keys
