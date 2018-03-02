@@ -85,7 +85,7 @@ class PhotosViewController: UIViewController {
         if let result = try? DataController.sharedInstance().viewContext.fetch(fetchRequest) {
             photos = result
             collection.reloadData()
-            print("collection has reloaded from fetch request")
+            // print("collection has reloaded from fetch request")
         } else {
             fatalError("The fetch could not be performed.")
         }
@@ -101,19 +101,19 @@ class PhotosViewController: UIViewController {
     
     @objc func refresh() {
         for photo in photos {
-            print("for photo in photos")
+            // print("for photo in photos")
             DataController.sharedInstance().viewContext.delete(photo)
             guard DataController.sharedInstance().saveViewContext() else {
                 showAlert(title: "Save Failed", message: "Unable to remove the pin.")
                 return
             }
         }
-        print("end of for loop")
+        // print("end of for loop")
         photosAreLoading = true
-        print("set photosAreLoading to \(photosAreLoading)")
+        // print("set photosAreLoading to \(photosAreLoading)")
         
         collection.reloadData()
-        print("collection has reloaded from refresh")
+        // print("collection has reloaded from refresh")
         
         FlickrClient.sharedInstance().getPhotosFromPin(pin) { (success, error) in
             self.photosAreLoading = false
@@ -125,6 +125,8 @@ class PhotosViewController: UIViewController {
                 }
             }
         }
+        
+        collection.reloadData()
     }
     
 }
@@ -134,18 +136,18 @@ class PhotosViewController: UIViewController {
 extension PhotosViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("photos are loading: \(photosAreLoading)")
+        // print("photos are loading: \(photosAreLoading)")
         if photosAreLoading {
-            print("\(FlickrClient.FlickrParameterValues.PerPage)")
+            // print("\(FlickrClient.FlickrParameterValues.PerPage)")
             return FlickrClient.FlickrParameterValues.PerPage
         } else {
-            print("\(photos.count)")
+            // print("\(photos.count)")
             return photos.count
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("cell for item at index path \(indexPath.row)")
+        // print("cell for item at index path \(indexPath.row)")
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCollectionViewCell
         
         if photosAreLoading {
