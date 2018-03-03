@@ -29,6 +29,12 @@ class PlacesViewController: UIViewController {
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var table: UITableView!
     
+    // MARK: - IBActions
+    
+    @IBAction func refreshTapped(_ sender: Any) {
+        refresh()
+    }
+    
     // MARK: - Life Cycle
     
     override func viewDidLoad() {
@@ -41,9 +47,7 @@ class PlacesViewController: UIViewController {
         map.isScrollEnabled = false
         
         // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
-        
-        tabBarController?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refresh))
-        
+                
         setupRefreshControl()
     }
     
@@ -95,14 +99,6 @@ class PlacesViewController: UIViewController {
         }
     }
     
-    func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
-        self.present(alert, animated: true, completion: nil)
-    }
-    
-    // MARK: - Selector Functions
-    
     @objc func refresh() {
         for photo in photos {
             DataController.sharedInstance().viewContext.delete(photo)
@@ -124,7 +120,14 @@ class PlacesViewController: UIViewController {
                 }
             }
         }
+        
         refreshControl.endRefreshing()
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     // MARK: - Navigation

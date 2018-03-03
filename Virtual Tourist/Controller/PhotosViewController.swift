@@ -20,12 +20,24 @@ class PhotosViewController: UIViewController {
     
     var pin: Pin!
     var photos: [Photo] = []
+    var selectedPhotos: [Photo] = []
     var photosAreLoading: Bool!
     
     // MARK: - IBOutlets
     
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var collection: UICollectionView!
+    @IBOutlet weak var bottomButton: UIButton!
+    
+    // MARK: - IBActions
+    
+    @IBAction func bottomButtonTapped(_ sender: Any) {
+        if selectedPhotos.count > 0 {
+            removeSelectedPhotos()
+        } else {
+            refresh()
+        }
+    }
     
     // MARK: - Life Cycle
     
@@ -39,9 +51,7 @@ class PhotosViewController: UIViewController {
         map.isScrollEnabled = false
         
         // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
-        
-        tabBarController?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refresh))
-        
+                
         photosAreLoading = false
     }
     
@@ -91,15 +101,7 @@ class PhotosViewController: UIViewController {
         }
     }
     
-    func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
-        self.present(alert, animated: true, completion: nil)
-    }
-    
-    // MARK: - Selector Functions
-    
-    @objc func refresh() {
+    func refresh() {
         for photo in photos {
             // print("for photo in photos")
             DataController.sharedInstance().viewContext.delete(photo)
@@ -129,11 +131,44 @@ class PhotosViewController: UIViewController {
         collection.reloadData()
     }
     
+    func removeSelectedPhotos() {
+        for photo in selectedPhotos {
+            // removes the photo instance from the photos array
+            photos = photos.filter() {
+                $0 !== photo
+            }
+            // removes the photo from Core Data
+            DataController.sharedInstance().viewContext.delete(photo)
+        }
+        
+        guard DataController.sharedInstance().saveViewContext() else {
+            self.showAlert(title: "Save Failed", message: "Unable to remove the pin.")
+            return
+        }
+        
+        selectedPhotos.removeAll()
+        bottomButton.setTitle("New Collection", for: .normal)
+        collection.reloadData()
+    }
+    
+    func updateBottomButtonText() {
+        let buttonText = (selectedPhotos.count > 0) ? "Remove Selected Pictures" : "New Collection"
+        bottomButton.setTitle(buttonText, for: .normal)
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
 }
 
 // MARK: - Collection View Data Source
 
 extension PhotosViewController: UICollectionViewDataSource {
+    
+    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // print("photos are loading: \(photosAreLoading)")
@@ -159,8 +194,17 @@ extension PhotosViewController: UICollectionViewDataSource {
             cell.activityIndicator.stopAnimating()
             
             let photo = photos[indexPath.row]
+            
             if let imageData = photo.image {
                 cell.photoImageView.image = UIImage(data: imageData)
+            }
+            
+            if selectedPhotos.contains(photo) {
+                cell.visualEffectView.isHidden = false
+                cell.visualEffectView.effect = UIBlurEffect(style: .prominent)
+            } else {
+                cell.visualEffectView.isHidden = true
+                cell.visualEffectView.effect = nil
             }
         }
         
@@ -174,6 +218,7 @@ extension PhotosViewController: UICollectionViewDataSource {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        /*
         let photoToDelete = photos.remove(at: indexPath.row)
         DataController.sharedInstance().viewContext.delete(photoToDelete)
         guard DataController.sharedInstance().saveViewContext() else {
@@ -181,6 +226,17 @@ extension PhotosViewController: UICollectionViewDelegate {
             return
         }
         collection.reloadData()
+        */
+        let photo = photos[indexPath.row]
+        if selectedPhotos.contains(photo) {
+            selectedPhotos = selectedPhotos.filter() {
+                $0 !== photo
+            }
+        } else {
+            selectedPhotos.append(photo)
+        }
+        updateBottomButtonText()
+        collection.reloadItems(at: [indexPath])
     }
     
 }
