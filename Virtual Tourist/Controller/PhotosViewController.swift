@@ -51,7 +51,7 @@ class PhotosViewController: UIViewController {
         map.isScrollEnabled = false
         
         // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
-                
+        
         photosAreLoading = false
     }
     
@@ -65,6 +65,7 @@ class PhotosViewController: UIViewController {
         if photos.count == 0 {
             refresh()
         }
+        collection.reloadData()
     }
     
     // MARK: - Helper Functions
@@ -94,8 +95,6 @@ class PhotosViewController: UIViewController {
         
         if let result = try? DataController.sharedInstance().viewContext.fetch(fetchRequest) {
             photos = result
-            collection.reloadData()
-            // print("collection has reloaded from fetch request")
         } else {
             fatalError("The fetch could not be performed.")
         }
@@ -103,32 +102,32 @@ class PhotosViewController: UIViewController {
     
     func refresh() {
         for photo in photos {
-            // print("for photo in photos")
             DataController.sharedInstance().viewContext.delete(photo)
             guard DataController.sharedInstance().saveViewContext() else {
                 showAlert(title: "Save Failed", message: "Unable to remove the pin.")
                 return
             }
         }
-        // print("end of for loop")
+        photos.removeAll()
+        
         photosAreLoading = true
-        // print("set photosAreLoading to \(photosAreLoading)")
-        
         collection.reloadData()
-        // print("collection has reloaded from refresh")
         
-        FlickrClient.sharedInstance().getPhotosFromPin(pin) { (success, error) in
-            self.photosAreLoading = false
-            performUIUpdatesOnMain {
-                if success {
-                    self.makeFetchRequest()
-                } else {
-                    self.showAlert(title: "Load Failed", message: error!)
+        for count in 0..<FlickrClient.FlickrParameterValues.PerPage {
+            FlickrClient.sharedInstance().getPhotoFromPin(pin) { (success, error) in
+                performUIUpdatesOnMain {
+                    if success {
+                        self.makeFetchRequest()
+                    } else {
+                        self.showAlert(title: "Load Failed", message: error!)
+                    }
+                    if count == FlickrClient.FlickrParameterValues.PerPage - 1 {
+                        self.photosAreLoading = false
+                    }
+                    self.collection.reloadData()
                 }
             }
         }
-        
-        collection.reloadData()
     }
     
     func removeSelectedPhotos() {
@@ -168,28 +167,18 @@ class PhotosViewController: UIViewController {
 
 extension PhotosViewController: UICollectionViewDataSource {
     
-    
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // print("photos are loading: \(photosAreLoading)")
-        if photosAreLoading {
-            // print("\(FlickrClient.FlickrParameterValues.PerPage)")
+        if photosAreLoading && photos.count < FlickrClient.FlickrParameterValues.PerPage {
             return FlickrClient.FlickrParameterValues.PerPage
         } else {
-            // print("\(photos.count)")
             return photos.count
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // print("cell for item at index path \(indexPath.row)")
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCollectionViewCell
         
-        if photosAreLoading {
-            cell.photoImageView.image = nil
-            cell.activityIndicator.isHidden = false
-            cell.activityIndicator.startAnimating()
-        } else {
+        if photos.count > 0 && indexPath.row < photos.count {
             cell.activityIndicator.isHidden = true
             cell.activityIndicator.stopAnimating()
             
@@ -199,6 +188,7 @@ extension PhotosViewController: UICollectionViewDataSource {
                 cell.photoImageView.image = UIImage(data: imageData)
             }
             
+            // decides whether to blur the photo (if the user has selected the photo)
             if selectedPhotos.contains(photo) {
                 cell.visualEffectView.isHidden = false
                 cell.visualEffectView.effect = UIBlurEffect(style: .prominent)
@@ -206,6 +196,11 @@ extension PhotosViewController: UICollectionViewDataSource {
                 cell.visualEffectView.isHidden = true
                 cell.visualEffectView.effect = nil
             }
+        } else {
+            // the image for this cell still has to load!
+            cell.photoImageView.image = nil
+            cell.activityIndicator.isHidden = false
+            cell.activityIndicator.startAnimating()
         }
         
         return cell
@@ -218,25 +213,18 @@ extension PhotosViewController: UICollectionViewDataSource {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        /*
-        let photoToDelete = photos.remove(at: indexPath.row)
-        DataController.sharedInstance().viewContext.delete(photoToDelete)
-        guard DataController.sharedInstance().saveViewContext() else {
-            self.showAlert(title: "Save Failed", message: "Unable to remove the pin.")
-            return
-        }
-        collection.reloadData()
-        */
-        let photo = photos[indexPath.row]
-        if selectedPhotos.contains(photo) {
-            selectedPhotos = selectedPhotos.filter() {
-                $0 !== photo
+        if indexPath.row < photos.count {
+            let photo = photos[indexPath.row]
+            if selectedPhotos.contains(photo) {
+                selectedPhotos = selectedPhotos.filter() {
+                    $0 !== photo
+                }
+            } else {
+                selectedPhotos.append(photo)
             }
-        } else {
-            selectedPhotos.append(photo)
+            updateBottomButtonText()
+            collection.reloadItems(at: [indexPath])
         }
-        updateBottomButtonText()
-        collection.reloadItems(at: [indexPath])
     }
     
 }

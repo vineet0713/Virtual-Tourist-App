@@ -15,7 +15,7 @@ extension FlickrClient {
     
     func getPhotoCountForPin(_ pin: Pin, completionHandler: @escaping (_ success: Bool, _ errorDescription: String?)->Void) {
         let bboxString = getBBoxString(latitude: pin.latitude, longitude: pin.longitude)
-        let methodParameters = generateParameters(bboxString)
+        let methodParameters = generateParameters(with: bboxString)
         let request = URLRequest(url: flickrURLFromParameters(methodParameters))
         
         let task = session.dataTask(with: request) { (data, response, error) in
@@ -72,9 +72,9 @@ extension FlickrClient {
     
     // MARK: - Get Photos Method
     
-    func getPhotosFromPin(_ pin: Pin, completionHandler: @escaping (_ success: Bool, _ errorDescription: String?)->Void) {
+    func getPhotoFromPin(_ pin: Pin, completionHandler: @escaping (_ success: Bool, _ errorDescription: String?)->Void) {
         let bboxString = getBBoxString(latitude: pin.latitude, longitude: pin.longitude)
-        let methodParameters = generateParameters(bboxString)
+        let methodParameters = generateParameters(with: bboxString)
         let request = URLRequest(url: flickrURLFromParameters(methodParameters))
         
         let task = session.dataTask(with: request) { (data, response, error) in
@@ -123,53 +123,43 @@ extension FlickrClient {
                 return
             }
             
-            var randomIndexes: [Int] = []
-            for _ in 0..<FlickrParameterValues.PerPage {
-                var randomIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
-                while randomIndexes.contains(randomIndex) {
-                    randomIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
-                }
-                randomIndexes.append(randomIndex)
+            let randomIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
+            let photo = photoArray[randomIndex]
+            
+            guard let imageURLString = photo[FlickrResponseKeys.MediumURL] as? String else {
+                completionHandler(false, "Could not find key \(FlickrResponseKeys.MediumURL).")
+                return
             }
             
-            for index in randomIndexes {
-                let photo = photoArray[index]
+            guard let imageTitleString = photo[FlickrResponseKeys.Title] as? String else {
+                completionHandler(false, "Could not find key \(FlickrResponseKeys.Title).")
+                return
+            }
+            
+            let imageURL = URL(string: imageURLString)!
+            guard let imageData = try? Data(contentsOf: imageURL) else {
+                completionHandler(false, "Could not get image data.")
+                return
+            }
+            
+            let pinId = pin.objectID
+            DataController.sharedInstance().backgroundContext.perform {
+                // should not access any UI elements, since UIKit is NOT thread-safe!
                 
-                guard let imageURLString = photo[FlickrResponseKeys.MediumURL] as? String else {
-                    completionHandler(false, "Could not find key \(FlickrResponseKeys.MediumURL).")
+                // initializes the new Photo
+                let newPhoto = Photo(context: DataController.sharedInstance().backgroundContext)
+                newPhoto.image = imageData
+                newPhoto.title = imageTitleString
+                
+                // since we can't access any objects associated with viewContext in this perform block (like pin),
+                // we need a matching Pin instance associated with the BACKGROUND context
+                let backgroundPin = DataController.sharedInstance().backgroundContext.object(with: pinId) as! Pin
+                newPhoto.pin = backgroundPin
+                
+                // tries to save the Photo to Core Data
+                guard DataController.sharedInstance().saveBackgroundContext() else {
+                    completionHandler(false, "Could not save the Photo to Core Data.")
                     return
-                }
-                
-                guard let imageTitleString = photo[FlickrResponseKeys.Title] as? String else {
-                    completionHandler(false, "Could not find key \(FlickrResponseKeys.Title).")
-                    return
-                }
-                
-                let imageURL = URL(string: imageURLString)!
-                guard let imageData = try? Data(contentsOf: imageURL) else {
-                    completionHandler(false, "Could not get image data.")
-                    return
-                }
-                
-                let pinId = pin.objectID
-                DataController.sharedInstance().backgroundContext.perform {
-                    // should not access any UI elements, since UIKit is NOT thread-safe!
-                    
-                    // initializes the new Photo
-                    let newPhoto = Photo(context: DataController.sharedInstance().backgroundContext)
-                    newPhoto.image = imageData
-                    newPhoto.title = imageTitleString
-                    
-                    // since we can't access any objects associated with viewContext in this perform block (like pin),
-                    // we need a matching Pin instance associated with the BACKGROUND context
-                    let backgroundPin = DataController.sharedInstance().backgroundContext.object(with: pinId) as! Pin
-                    newPhoto.pin = backgroundPin
-                    
-                    // tries to save the Photo to Core Data
-                    guard DataController.sharedInstance().saveBackgroundContext() else {
-                        completionHandler(false, "Could not save the Photo to Core Data.")
-                        return
-                    }
                 }
             }
             

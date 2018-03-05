@@ -41,7 +41,7 @@ class FlickrClient: NSObject {
         return bboxArray.joined(separator: ",")
     }
     
-    func generateParameters(_ bboxString: String) -> [String:Any] {
+    func generateParameters(with bboxString: String) -> [String:Any] {
         var methodParameters: [String:Any] = [:]
         
         let parameterKeys = FlickrParameterKeys.orderedValues

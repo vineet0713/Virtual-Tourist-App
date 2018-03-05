@@ -21,6 +21,7 @@ class PlacesViewController: UIViewController {
     var pin: Pin!
     var photos: [Photo] = []
     var selectedPhoto: Photo!
+    var photosAreLoading: Bool!
     
     var refreshControl: UIRefreshControl!
     
@@ -49,6 +50,8 @@ class PlacesViewController: UIViewController {
         // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
                 
         setupRefreshControl()
+        
+        photosAreLoading = false
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,6 +60,11 @@ class PlacesViewController: UIViewController {
         setupMap()
         
         makeFetchRequest()
+        
+        if photos.count == 0 {
+            refresh()
+        }
+        table.reloadData()
     }
     
     // MARK: - Helper Functions
@@ -93,7 +101,6 @@ class PlacesViewController: UIViewController {
         
         if let result = try? DataController.sharedInstance().viewContext.fetch(fetchRequest) {
             photos = result
-            table.reloadData()
         } else {
             fatalError("The fetch could not be performed.")
         }
@@ -109,18 +116,26 @@ class PlacesViewController: UIViewController {
         }
         photos.removeAll()
         
+        photosAreLoading = true
         table.reloadData()
         
-        FlickrClient.sharedInstance().getPhotosFromPin(pin) { (success, error) in
-            performUIUpdatesOnMain {
-                if success {
-                    self.makeFetchRequest()
-                } else {
-                    self.showAlert(title: "Load Failed", message: error!)
+        for count in 0..<FlickrClient.FlickrParameterValues.PerPage {
+            FlickrClient.sharedInstance().getPhotoFromPin(pin) { (success, error) in
+                performUIUpdatesOnMain {
+                    if success {
+                        self.makeFetchRequest()
+                    } else {
+                        self.showAlert(title: "Load Failed", message: error!)
+                    }
+                    if count == FlickrClient.FlickrParameterValues.PerPage - 1 {
+                        self.photosAreLoading = false
+                    }
+                    self.table.reloadData()
                 }
             }
         }
         
+        photosAreLoading = false
         refreshControl.endRefreshing()
     }
     
@@ -149,17 +164,25 @@ class PlacesViewController: UIViewController {
 extension PlacesViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photos.count
+        if photosAreLoading && photos.count < FlickrClient.FlickrParameterValues.PerPage {
+            return FlickrClient.FlickrParameterValues.PerPage
+        } else {
+            return photos.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let photo = photos[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "placeCell", for: indexPath) as! PlaceTableViewCell
         
-        if photo.title == "" {
-            cell.titleLabel.text = "[untitled]"
+        if photos.count > 0 && indexPath.row < photos.count  {
+            let photo = photos[indexPath.row]
+            if photo.title == "" {
+                cell.titleLabel.text = "[untitled]"
+            } else {
+                cell.titleLabel.text = photo.title
+            }
         } else {
-            cell.titleLabel.text = photo.title
+            cell.titleLabel.text = " "
         }
         
         return cell
@@ -172,9 +195,11 @@ extension PlacesViewController: UITableViewDataSource {
 extension PlacesViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        table.deselectRow(at: indexPath, animated: false)
-        selectedPhoto = photos[indexPath.row]
-        performSegue(withIdentifier: "placesToDetailSegue", sender: self)
+        if indexPath.row < photos.count {
+            table.deselectRow(at: indexPath, animated: false)
+            selectedPhoto = photos[indexPath.row]
+            performSegue(withIdentifier: "placesToDetailSegue", sender: self)
+        }
     }
     
 }
