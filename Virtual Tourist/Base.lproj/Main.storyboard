@@ -53,20 +53,13 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Cyber Tourist" id="CfN-Fv-7DF">
-                        <barButtonItem key="leftBarButtonItem" title="Clear" id="ipU-c0-Cdp">
+                        <barButtonItem key="leftBarButtonItem" title="Edit / Clear" id="ipU-c0-Cdp">
                             <connections>
-                                <action selector="clearPressed:" destination="BYZ-38-t0r" id="rgN-aE-Vwx"/>
-                            </connections>
-                        </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Edit" id="elL-AN-oVe">
-                            <connections>
-                                <action selector="editPressed:" destination="BYZ-38-t0r" id="Ahi-Z2-ppn"/>
+                                <action selector="editOrClearPressed:" destination="BYZ-38-t0r" id="LPc-pq-8b5"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="clearButton" destination="ipU-c0-Cdp" id="Jaa-NG-I5i"/>
-                        <outlet property="editButton" destination="elL-AN-oVe" id="6Q4-OV-SP2"/>
                         <outlet property="map" destination="gEH-WK-JlS" id="BAM-uy-Kkv"/>
                         <segue destination="IT9-P2-7GI" kind="show" identifier="pinTappedSegue" id="pon-kX-BD4"/>
                     </connections>
@@ -74,7 +67,7 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
                 <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="4Hd-mp-aMh">
                     <connections>
-                        <action selector="addPin:" destination="BYZ-38-t0r" id="NiZ-Mb-DPp"/>
+                        <action selector="wantsToAddPin:" destination="BYZ-38-t0r" id="6xg-bZ-Mvg"/>
                     </connections>
                 </pongPressGestureRecognizer>
             </objects>

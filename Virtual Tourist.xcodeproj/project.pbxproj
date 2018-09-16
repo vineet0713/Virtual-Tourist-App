@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		652EB47B214DC0BF00429B2C /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 652EB47A214DC0BF00429B2C /* CoreLocation.framework */; };
 		65CD675420433AA30011107D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD675320433AA30011107D /* AppDelegate.swift */; };
 		65CD675620433AA30011107D /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD675520433AA30011107D /* MapViewController.swift */; };
 		65CD675920433AA30011107D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 65CD675720433AA30011107D /* Main.storyboard */; };
@@ -46,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		652EB47A214DC0BF00429B2C /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		65CD675020433AA30011107D /* Virtual Tourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Virtual Tourist.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65CD675320433AA30011107D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		65CD675520433AA30011107D /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				652EB47B214DC0BF00429B2C /* CoreLocation.framework in Frameworks */,
 				65CD678620433FA70011107D /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -157,6 +160,7 @@
 		65CD678420433FA70011107D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				652EB47A214DC0BF00429B2C /* CoreLocation.framework */,
 				65CD678520433FA70011107D /* MapKit.framework */,
 			);
 			name = Frameworks;

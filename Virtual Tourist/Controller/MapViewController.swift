@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreLocation
 import CoreData
 
 class MapViewController: UIViewController {
@@ -18,12 +19,16 @@ class MapViewController: UIViewController {
     var selectedPin: Pin!
     
     var editingMode: Bool!
+    var addPinToCurrentLocation: Bool! = false
+    
+    var locationManager: CLLocationManager!
     
     // MARK: - IBOutlets
     
     @IBOutlet weak var map: MKMapView!
-    @IBOutlet weak var editButton: UIBarButtonItem!
-    @IBOutlet weak var clearButton: UIBarButtonItem!
+    
+    var doneBarButton: UIBarButtonItem!
+    var locationBarButton: MKUserTrackingBarButtonItem!
     
     // MARK: - Life Cycle
     
@@ -33,15 +38,20 @@ class MapViewController: UIViewController {
         
         map.delegate = self
         setMapState()
+        setupLocationManager()
+        
+        doneBarButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(donePressed))
+        locationBarButton = MKUserTrackingBarButtonItem(mapView: map)
         
         editingMode = false
+        updateToolbarItems()
         
         makeFetchRequest()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         makeFetchRequest()
     }
     
@@ -60,8 +70,25 @@ class MapViewController: UIViewController {
         }
     }
     
+    func setMapState() {
+        let regionCenterLat = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Latitude"))
+        let regionCenterLong = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Longitude"))
+        let regionSpanLatDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Latitude Delta"))
+        let regionSpanLongDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
+        
+        let regionLocation = CLLocationCoordinate2DMake(regionCenterLat, regionCenterLong)
+        map.setRegion(MKCoordinateRegionMake(regionLocation, MKCoordinateSpanMake(regionSpanLatDelta, regionSpanLongDelta)), animated: true)
+    }
+    
+    func setupLocationManager() {
+        locationManager = CLLocationManager()
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
     func updateMap(pins: [Pin]) {
         map.removeAnnotations(map.annotations)
+        listOfPins.removeAll()
         
         for pin in pins {
             let latitude = CLLocationDegrees(pin.latitude)
@@ -76,6 +103,90 @@ class MapViewController: UIViewController {
         }
     }
     
+    func updateToolbarItems() {
+        if editingMode {
+            self.title = "Edit Annotation Pins"
+            
+            navigationItem.leftBarButtonItem?.title = "Clear All"
+            navigationItem.rightBarButtonItem = doneBarButton
+        } else {
+            self.title = "Virtual Tourist"
+            
+            navigationItem.leftBarButtonItem?.title = "Edit"
+            navigationItem.rightBarButtonItem = locationBarButton
+        }
+    }
+    
+    func mapContainsPinWith(latitude: CLLocationDegrees, longitude: CLLocationDegrees) -> Bool {
+        for pin in listOfPins.keys {
+            if latitude == pin.coordinate.latitude && longitude == pin.coordinate.longitude {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func addPin(coordinates: CLLocationCoordinate2D) {
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinates
+        self.map.addAnnotation(annotation)
+        
+        // initializes the new Pin
+        let newPin = Pin(context: DataController.sharedInstance().viewContext)
+        newPin.latitude = Double(coordinates.latitude)
+        newPin.longitude = Double(coordinates.longitude)
+        
+        // tries to save the Pin to Core Data
+        guard DataController.sharedInstance().saveViewContext() else {
+            showAlert(title: "Save Failed", message: "Unable to save the pin.")
+            return
+        }
+        
+        listOfPins[annotation] = newPin
+        
+        FlickrClient.sharedInstance().getPhotoCountForPin(newPin, completionHandler: { (success, error) in
+            performUIUpdatesOnMain {
+                if success == false {
+                    // this means that either an error happened, or there are 0 photos for these coordinates
+                    self.map.removeAnnotation(annotation)
+                    self.deletePin(annotationToDelete: annotation)
+                    self.showAlert(title: "Load Failed", message: error!)
+                }
+            }
+        })
+    }
+    
+    func clearPins() {
+        if listOfPins.isEmpty {
+            showAlert(title: "No Pins", message: "You don't have any pins to clear.")
+            return
+        }
+        
+        var alertMessage: String!
+        if listOfPins.count > 1 {
+            alertMessage = "Are you sure you want to clear all \(listOfPins.count) pins and their associated photos?"
+        } else {
+            alertMessage = "Are you sure you want to clear the pin and its associated photos?"
+        }
+        
+        let alert = UIAlertController(title: "Confirm Clear", message: alertMessage, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
+            performUIUpdatesOnMain {
+                self.map.removeAnnotations(self.map.annotations)
+            }
+            // update Core Data
+            for annotation in self.map.annotations {
+                if let pointAnnotation = annotation as? MKPointAnnotation {
+                    self.deletePin(annotationToDelete: pointAnnotation)
+                } else {
+                    // This is a MKUserLocation, which is also included in the map's annotations!
+                }
+            }
+        }))
+        present(alert, animated: true, completion: nil)
+    }
+    
     func deletePin(annotationToDelete: MKPointAnnotation) {
         let pinToDelete = self.listOfPins.removeValue(forKey: annotationToDelete)
         DataController.sharedInstance().viewContext.delete(pinToDelete!)
@@ -83,16 +194,6 @@ class MapViewController: UIViewController {
             self.showAlert(title: "Save Failed", message: "Unable to remove the pin.")
             return
         }
-    }
-    
-    func setMapState() {
-        let regionCenterLat = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Latitude"))
-        let regionCenterLong = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Center Longitude"))
-        let regionSpanLatDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Latitude Delta"))
-        let regionSpanLongDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
-        
-        let regionLocation = CLLocationCoordinate2DMake(regionCenterLat, regionCenterLong)
-        map.setRegion(MKCoordinateRegionMake(regionLocation, MKCoordinateSpanMake(regionSpanLatDelta, regionSpanLongDelta)), animated: true)
     }
     
     func saveMapState() {
@@ -113,70 +214,28 @@ class MapViewController: UIViewController {
     
     // MARK: - IBActions
     
-    @IBAction func editPressed(_ sender: Any) {
-        editingMode = !editingMode
+    @IBAction func editOrClearPressed(_ sender: Any) {
         if editingMode {
-            self.title = "Edit Annotation Pins"
-            clearButton.isEnabled = false
-            editButton.title = "Done"
-            editButton.style = .done
+            clearPins()
         } else {
-            self.title = "Virtual Tourist"
-            clearButton.isEnabled = true
-            editButton.title = "Edit"
-            editButton.style = .plain
+            editingMode = !editingMode
+            updateToolbarItems()
         }
     }
     
-    @IBAction func clearPressed(_ sender: Any) {
-        let alert = UIAlertController(title: "Confirm Clear", message: "Are you sure you want to clear all pins and their associated photos?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
-            performUIUpdatesOnMain {
-                self.map.removeAnnotations(self.map.annotations)
-            }
-            // update Core Data
-            for annotation in self.map.annotations {
-                self.deletePin(annotationToDelete: annotation as! MKPointAnnotation)
-            }
-        }))
-        present(alert, animated: true, completion: nil)
-    }
-    
-    // this the IBAction for the Long Press Gesture Recognizer
-    @IBAction func addPin(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == .began {
+    @IBAction func wantsToAddPin(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .began && editingMode == false {
             let location = sender.location(in: map)
-            let coordinates = map.convert(location, toCoordinateFrom: map)
-            
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = coordinates
-            self.map.addAnnotation(annotation)
-            
-            // initializes the new Pin
-            let newPin = Pin(context: DataController.sharedInstance().viewContext)
-            newPin.latitude = Double(coordinates.latitude)
-            newPin.longitude = Double(coordinates.longitude)
-            
-            // tries to save the Pin to Core Data
-            guard DataController.sharedInstance().saveViewContext() else {
-                showAlert(title: "Save Failed", message: "Unable to save the pin.")
-                return
-            }
-            
-            listOfPins[annotation] = newPin
-            
-            FlickrClient.sharedInstance().getPhotoCountForPin(newPin, completionHandler: { (success, error) in
-                performUIUpdatesOnMain {
-                    if success == false {
-                        // this means that either an error happened, or there are 0 photos for these coordinates
-                        self.map.removeAnnotation(annotation)
-                        self.deletePin(annotationToDelete: annotation)
-                        self.showAlert(title: "Load Failed", message: error!)
-                    }
-                }
-            })
+            let pinCoordinates = map.convert(location, toCoordinateFrom: map)
+            addPin(coordinates: pinCoordinates)
         }
+    }
+    
+    // MARK: - Selector Functions
+    
+    @objc func donePressed() {
+        editingMode = !editingMode
+        updateToolbarItems()
     }
     
     // MARK: - Navigation
@@ -198,6 +257,7 @@ class MapViewController: UIViewController {
 extension MapViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        map.setUserTrackingMode(.none, animated: true)
         saveMapState()
     }
     
@@ -214,10 +274,24 @@ extension MapViewController: MKMapViewDelegate {
             }))
             present(alert, animated: true, completion: nil)
         } else {
-            let selectedAnnotation = view.annotation! as! MKPointAnnotation
-            selectedPin = listOfPins[selectedAnnotation]
-            performSegue(withIdentifier: "pinTappedSegue", sender: self)
+            if let selectedAnnotation = view.annotation! as? MKPointAnnotation {
+                selectedPin = listOfPins[selectedAnnotation]
+                performSegue(withIdentifier: "pinTappedSegue", sender: self)
+            }
+            
         }
     }
     
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        // if there isn't a pin on the Map for the user's location, then request to add it
+        if mapContainsPinWith(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude) == false {
+            let alert = UIAlertController(title: "Add Pin", message: "Do you want to add a pin to your current location?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
+                self.addPin(coordinates: (self.map.userLocation.location?.coordinate)!)
+            }))
+            present(alert, animated: true, completion: nil)
+        }
+    }
+
 }
