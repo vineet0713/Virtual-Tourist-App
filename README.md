@@ -1,5 +1,5 @@
 # Cyber Tourist
-This app allows users to drop pins on a map and store Flickr images from those coordinates.
+This app allows users to drop pins on a map (manually or based on their current location), and store Flickr images from those coordinates.
 
 ## Features
 * download Flickr images based on coordinates of a pin on a map
