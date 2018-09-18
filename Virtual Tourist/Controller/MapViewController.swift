@@ -19,7 +19,7 @@ class MapViewController: UIViewController {
     var selectedPin: Pin!
     
     var editingMode: Bool!
-    var addPinToCurrentLocation: Bool! = false
+    var userWantsPinOnCurrentLocation: Bool! = false
     
     var locationManager: CLLocationManager!
     
@@ -120,9 +120,11 @@ class MapViewController: UIViewController {
     func mapContainsPinWith(latitude: CLLocationDegrees, longitude: CLLocationDegrees) -> Bool {
         for pin in listOfPins.keys {
             if latitude == pin.coordinate.latitude && longitude == pin.coordinate.longitude {
+                print("will return true!")
                 return true
             }
         }
+        print("will return false!")
         return false
     }
     
@@ -283,15 +285,23 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        // if there isn't a pin on the Map for the user's location, then request to add it
-        if mapContainsPinWith(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude) == false {
-            let alert = UIAlertController(title: "Add Pin", message: "Do you want to add a pin to your current location?", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-            alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
-                self.addPin(coordinates: (self.map.userLocation.location?.coordinate)!)
-            }))
-            present(alert, animated: true, completion: nil)
+        // if the user wants pin on current location (in other words, user changed the tracking mode to follow)
+        if userWantsPinOnCurrentLocation {
+            print("userWantsPinOnCurrentLocation!")
+            // if there isn't a pin on the Map for the user's location, then request to add it
+            if mapContainsPinWith(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude) == false {
+                let alert = UIAlertController(title: "Add Pin", message: "Do you want to add a pin to your current location?", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Yes", style: .`default`, handler: { (action) in
+                    self.addPin(coordinates: (self.map.userLocation.location?.coordinate)!)
+                }))
+                present(alert, animated: true, completion: nil)
+            }
         }
     }
-
+    
+    func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+        userWantsPinOnCurrentLocation = (mode == .follow)
+    }
+    
 }
