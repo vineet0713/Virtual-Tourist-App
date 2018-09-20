@@ -77,7 +77,7 @@ class MapViewController: UIViewController {
         let regionSpanLongDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "Region Span Longitude Delta"))
         
         let regionLocation = CLLocationCoordinate2DMake(regionCenterLat, regionCenterLong)
-        map.setRegion(MKCoordinateRegionMake(regionLocation, MKCoordinateSpanMake(regionSpanLatDelta, regionSpanLongDelta)), animated: true)
+        map.setRegion(MKCoordinateRegion.init(center: regionLocation, span: MKCoordinateSpan.init(latitudeDelta: regionSpanLatDelta, longitudeDelta: regionSpanLongDelta)), animated: true)
     }
     
     func setupLocationManager() {

@@ -37,7 +37,7 @@ extension FlickrClient {
             var parsedResult: [String:Any]!
             
             do {
-                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String:Any]
+                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]
             } catch {
                 completionHandler(false, "Could not parse the data as JSON.")
                 return
@@ -96,7 +96,7 @@ extension FlickrClient {
             var parsedResult: [String:Any]!
             
             do {
-                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String:Any]
+                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]
             } catch {
                 completionHandler(false, "Could not parse the data as JSON.")
                 return

@@ -74,7 +74,7 @@ class PlacesViewController: UIViewController {
         let longitude = CLLocationDegrees(pin.longitude)
         
         let regionLocation = CLLocationCoordinate2DMake(latitude, longitude)
-        map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, latitudinalDist, longitudinalDist), animated: false)
+        map.setRegion(MKCoordinateRegion.init(center: regionLocation, latitudinalMeters: latitudinalDist, longitudinalMeters: longitudinalDist), animated: false)
         
         let annotation = MKPointAnnotation()
         annotation.coordinate = CLLocationCoordinate2DMake(latitude, longitude)
@@ -86,7 +86,7 @@ class PlacesViewController: UIViewController {
     func setupRefreshControl() {
         refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
-        refreshControl.addTarget(self, action: #selector(refresh), for: UIControlEvents.valueChanged)
+        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
         table.addSubview(refreshControl)
     }
     

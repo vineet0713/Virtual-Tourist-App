@@ -18,6 +18,9 @@ class PhotosViewController: UIViewController {
     let latitudinalDist: CLLocationDistance = 5000   // represents 5 thousand meters, or 5 kilometers
     let longitudinalDist: CLLocationDistance = 5000  // represents 5 thousand meters, or 5 kilometers
     
+    // sets the number of cells per row (on any device!)
+    let cellsPerRow: CGFloat = 3
+    
     var pin: Pin!
     var photos: [Photo] = []
     var selectedPhotos: [Photo] = []
@@ -75,7 +78,7 @@ class PhotosViewController: UIViewController {
         let longitude = CLLocationDegrees(pin.longitude)
         
         let regionLocation = CLLocationCoordinate2DMake(latitude, longitude)
-        map.setRegion(MKCoordinateRegionMakeWithDistance(regionLocation, latitudinalDist, longitudinalDist), animated: false)
+        map.setRegion(MKCoordinateRegion.init(center: regionLocation, latitudinalMeters: latitudinalDist, longitudinalMeters: longitudinalDist), animated: false)
         
         let annotation = MKPointAnnotation()
         annotation.coordinate = CLLocationCoordinate2DMake(latitude, longitude)
@@ -225,6 +228,17 @@ extension PhotosViewController: UICollectionViewDelegate {
             updateBottomButtonText()
             collection.reloadItems(at: [indexPath])
         }
+    }
+    
+}
+
+// MARK: - Collection View Delegate Flow Layout
+
+extension PhotosViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = UIScreen.main.bounds.width
+        return CGSize(width: (width - 10) / (cellsPerRow + 1), height: (width - 10) / (cellsPerRow + 1))
     }
     
 }
