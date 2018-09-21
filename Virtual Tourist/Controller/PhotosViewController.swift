@@ -18,9 +18,6 @@ class PhotosViewController: UIViewController {
     let latitudinalDist: CLLocationDistance = 5000   // represents 5 thousand meters, or 5 kilometers
     let longitudinalDist: CLLocationDistance = 5000  // represents 5 thousand meters, or 5 kilometers
     
-    // sets the number of cells per row (on any device!)
-    let cellsPerRow: CGFloat = 3
-    
     var pin: Pin!
     var photos: [Photo] = []
     var selectedPhotos: [Photo] = []
@@ -238,6 +235,15 @@ extension PhotosViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = UIScreen.main.bounds.width
+        var cellsPerRow: CGFloat
+        
+        let orientation = UIDevice.current.orientation
+        if orientation == .portrait || orientation == .portraitUpsideDown {
+            cellsPerRow = 3
+        } else {
+            cellsPerRow = 5
+        }
+        
         return CGSize(width: (width - 10) / (cellsPerRow + 1), height: (width - 10) / (cellsPerRow + 1))
     }
     
