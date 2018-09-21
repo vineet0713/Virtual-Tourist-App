@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func checkIfFirstLaunch() {
         if UserDefaults.standard.bool(forKey: "hasLaunchedBefore") == false {
-            print("This is the first launch ever!")
+            // This is the first launch ever!
             UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
             
             UserDefaults.standard.set(centerAmericaLat, forKey: "Region Center Latitude")
