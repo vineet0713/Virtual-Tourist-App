@@ -183,6 +183,8 @@ class MapViewController: UIViewController {
                     // This is a MKUserLocation, which is also included in the map's annotations!
                 }
             }
+            self.editingMode = false
+            self.updateToolbarItems()
         }))
         present(alert, animated: true, completion: nil)
     }
