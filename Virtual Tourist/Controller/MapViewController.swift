@@ -110,7 +110,7 @@ class MapViewController: UIViewController {
             navigationItem.leftBarButtonItem?.title = "Clear All"
             navigationItem.rightBarButtonItem = doneBarButton
         } else {
-            self.title = "Virtual Tourist"
+            self.title = "Cyber Tourist"
             
             navigationItem.leftBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem = locationBarButton
