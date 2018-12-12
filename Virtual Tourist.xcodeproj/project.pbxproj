@@ -18,9 +18,7 @@
 		65CD677720433AA30011107D /* Virtual_TouristUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD677620433AA30011107D /* Virtual_TouristUITests.swift */; };
 		65CD678620433FA70011107D /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65CD678520433FA70011107D /* MapKit.framework */; };
 		65CD678D20434C930011107D /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD678C20434C930011107D /* PhotosViewController.swift */; };
-		65CD678F20434CA90011107D /* PlacesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD678E20434CA90011107D /* PlacesViewController.swift */; };
 		65CD6791204352690011107D /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD6790204352690011107D /* DetailViewController.swift */; };
-		65CD679320436F1C0011107D /* PlaceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679220436F1C0011107D /* PlaceTableViewCell.swift */; };
 		65CD67952043755C0011107D /* PhotoCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD67942043755C0011107D /* PhotoCollectionViewCell.swift */; };
 		65CD679920437EBB0011107D /* FlickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679820437EBB0011107D /* FlickrClient.swift */; };
 		65CD679B20437F5E0011107D /* FlickrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CD679A20437F5E0011107D /* FlickrConstants.swift */; };
@@ -64,9 +62,7 @@
 		65CD677820433AA30011107D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		65CD678520433FA70011107D /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		65CD678C20434C930011107D /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
-		65CD678E20434CA90011107D /* PlacesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesViewController.swift; sourceTree = "<group>"; };
 		65CD6790204352690011107D /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
-		65CD679220436F1C0011107D /* PlaceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceTableViewCell.swift; sourceTree = "<group>"; };
 		65CD67942043755C0011107D /* PhotoCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewCell.swift; sourceTree = "<group>"; };
 		65CD679820437EBB0011107D /* FlickrClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrClient.swift; sourceTree = "<group>"; };
 		65CD679A20437F5E0011107D /* FlickrConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrConstants.swift; sourceTree = "<group>"; };
@@ -179,7 +175,6 @@
 		65CD678820434C070011107D /* View */ = {
 			isa = PBXGroup;
 			children = (
-				65CD679220436F1C0011107D /* PlaceTableViewCell.swift */,
 				65CD67942043755C0011107D /* PhotoCollectionViewCell.swift */,
 			);
 			path = View;
@@ -190,7 +185,6 @@
 			children = (
 				65CD675520433AA30011107D /* MapViewController.swift */,
 				65CD678C20434C930011107D /* PhotosViewController.swift */,
-				65CD678E20434CA90011107D /* PlacesViewController.swift */,
 				65CD6790204352690011107D /* DetailViewController.swift */,
 			);
 			path = Controller;
@@ -362,9 +356,7 @@
 				65CD67952043755C0011107D /* PhotoCollectionViewCell.swift in Sources */,
 				65CD679B20437F5E0011107D /* FlickrConstants.swift in Sources */,
 				65CD678D20434C930011107D /* PhotosViewController.swift in Sources */,
-				65CD678F20434CA90011107D /* PlacesViewController.swift in Sources */,
 				65CD67A1204396C20011107D /* DataController.swift in Sources */,
-				65CD679320436F1C0011107D /* PlaceTableViewCell.swift in Sources */,
 				65CD6791204352690011107D /* DetailViewController.swift in Sources */,
 				65CD675C20433AA30011107D /* Virtual_Tourist.xcdatamodeld in Sources */,
 				65CD675420433AA30011107D /* AppDelegate.swift in Sources */,

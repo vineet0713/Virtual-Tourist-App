@@ -47,6 +47,8 @@ class MapViewController: UIViewController {
         updateToolbarItems()
         
         makeFetchRequest()
+        
+        displayInstructions(title: "Welcome!", message: "To get started, tap and hold anywhere on the map to drop a pin.", action: "Get Started")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -56,6 +58,17 @@ class MapViewController: UIViewController {
     }
     
     // MARK: - Helper Functions
+    
+    func displayInstructions(title: String, message: String, action: String) {
+        if UserDefaults.standard.bool(forKey: "hasDisplayedInstructionsBefore") == false {
+            showAlert(title: title, message: message, action: action)
+            
+            if title == "Pin Successfully Added!" {
+                UserDefaults.standard.set(true, forKey: "hasDisplayedInstructionsBefore")
+                UserDefaults.standard.synchronize()
+            }
+        }
+    }
     
     func makeFetchRequest() {
         let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -208,9 +221,9 @@ class MapViewController: UIViewController {
         UserDefaults.standard.set(Float(regionSpan.longitudeDelta), forKey: "Region Span Longitude Delta")
     }
     
-    func showAlert(title: String, message: String) {
+    func showAlert(title: String, message: String, action: String = "OK") {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString(action, comment: "Default action"), style: .`default`, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
     
@@ -230,6 +243,7 @@ class MapViewController: UIViewController {
             let location = sender.location(in: map)
             let pinCoordinates = map.convert(location, toCoordinateFrom: map)
             addPin(coordinates: pinCoordinates)
+            displayInstructions(title: "Pin Successfully Added!", message: "Next, tap the pin to see its associated images.", action: "Got it!")
         }
     }
     
@@ -243,13 +257,8 @@ class MapViewController: UIViewController {
     // MARK: - Navigation
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let tabBarController = segue.destination as? UITabBarController {
-            if let photosVC = tabBarController.viewControllers![0] as? PhotosViewController {
-                photosVC.pin = selectedPin
-            }
-            if let placesVC = tabBarController.viewControllers![1] as? PlacesViewController {
-                placesVC.pin = selectedPin
-            }
+        if let photosVC = segue.destination as? PhotosViewController {
+            photosVC.pin = selectedPin
         }
     }
 }

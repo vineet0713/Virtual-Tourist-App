@@ -20,6 +20,7 @@ class PhotosViewController: UIViewController {
     
     var pin: Pin!
     var photos: [Photo] = []
+    var selectedIndex: Int!
     var selectedPhotos: [Photo] = []
     var photosAreLoading: Bool!
     
@@ -46,6 +47,8 @@ class PhotosViewController: UIViewController {
         
         // Do any additional setup after loading the view.
         
+        setupLongPress()
+        
         // makes the map "static"
         map.isZoomEnabled = false
         map.isScrollEnabled = false
@@ -53,6 +56,8 @@ class PhotosViewController: UIViewController {
         // the CollectionView's delegate and dataSource are set to 'self' using Storyboard
         
         photosAreLoading = false
+        
+        displayHint()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -69,6 +74,43 @@ class PhotosViewController: UIViewController {
     }
     
     // MARK: - Helper Functions
+    
+    func displayHint() {
+        if UserDefaults.standard.bool(forKey: "hasDisplayedHintBefore") == false {
+            showAlert(title: "A Quick Hint", message: "To remove an image from this collection, tap and hold on the image.", action: "Got it!")
+            UserDefaults.standard.set(true, forKey: "hasDisplayedHintBefore")
+            UserDefaults.standard.synchronize()
+        }
+    }
+    
+    func setupLongPress() {
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(press:)))
+        longPressGestureRecognizer.minimumPressDuration = 0.5
+        self.collection.addGestureRecognizer(longPressGestureRecognizer)
+    }
+    
+    // MARK: - Selector Functions
+    
+    @objc func handleLongPress(press: UILongPressGestureRecognizer) {
+        if press.state == .began {
+            let point = press.location(in: self.collection)
+            // if the user long pressed on a valid cell, then select/deselect it
+            if let indexPath = self.collection.indexPathForItem(at: point) {
+                if indexPath.row < photos.count {
+                    let photo = photos[indexPath.row]
+                    if selectedPhotos.contains(photo) {
+                        selectedPhotos = selectedPhotos.filter() {
+                            $0 !== photo
+                        }
+                    } else {
+                        selectedPhotos.append(photo)
+                    }
+                    updateBottomButtonText()
+                    collection.reloadItems(at: [indexPath])
+                }
+            }
+        }
+    }
     
     func setupMap() {
         let latitude = CLLocationDegrees(pin.latitude)
@@ -155,10 +197,20 @@ class PhotosViewController: UIViewController {
         bottomButton.setTitle(buttonText, for: .normal)
     }
     
-    func showAlert(title: String, message: String) {
+    func showAlert(title: String, message: String, action: String = "OK") {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .`default`, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString(action, comment: "Default action"), style: .`default`, handler: nil))
         self.present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Navigation
+    
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let detailVC = segue.destination as? DetailViewController {
+            detailVC.photos = self.photos
+            detailVC.selectedIndex = self.selectedIndex
+        }
     }
     
 }
@@ -213,17 +265,10 @@ extension PhotosViewController: UICollectionViewDataSource {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.row < photos.count {
-            let photo = photos[indexPath.row]
-            if selectedPhotos.contains(photo) {
-                selectedPhotos = selectedPhotos.filter() {
-                    $0 !== photo
-                }
-            } else {
-                selectedPhotos.append(photo)
-            }
-            updateBottomButtonText()
-            collection.reloadItems(at: [indexPath])
+        let index = indexPath.row
+        if index < photos.count && selectedPhotos.contains(photos[index]) == false {
+            selectedIndex = index
+            performSegue(withIdentifier: "photosToDetailSegue", sender: self)
         }
     }
     
